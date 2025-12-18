@@ -29,9 +29,9 @@ const defaultFeatureFlags: FeatureFlags = {
   reflections: true,
   groundingPractice: true,
   coachBrian: true,
-  visionBoard: true,
-  achievements: true,
-  release: true,
+  visionBoard: false,
+  achievements: false,
+  release: false,
   brotherhood: true,
 };
 

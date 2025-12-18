@@ -47,7 +47,6 @@ export function useCreateMood() {
       });
       queryClient.invalidateQueries({ queryKey: ["stats", "habits"] });
       queryClient.invalidateQueries({ queryKey: ["stats", "streaks"] });
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
     },
   });
 }
@@ -102,7 +101,6 @@ export function useToggleHabit() {
       queryClient.invalidateQueries({ queryKey: ["stats", "dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["stats", "habits"] });
       queryClient.invalidateQueries({ queryKey: ["stats", "streaks"] });
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
     },
   });
 }
@@ -143,7 +141,6 @@ export function useCreateJournalEntry() {
       queryClient.invalidateQueries({ queryKey: ["journal"] });
       queryClient.invalidateQueries({ queryKey: ["stats", "dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["stats", "streaks"] });
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
     },
   });
 }
@@ -352,28 +349,28 @@ export function useAllStreaks() {
   });
 }
 
-// Achievements
-export function useAchievements() {
-  return useQuery<UserAchievement[]>({
-    queryKey: ["achievements"],
-    queryFn: () => fetchJSON<UserAchievement[]>(`${API_BASE}/achievements`),
-  });
-}
+// Achievements - DISABLED
+// export function useAchievements() {
+//   return useQuery<UserAchievement[]>({
+//     queryKey: ["achievements"],
+//     queryFn: () => fetchJSON<UserAchievement[]>(`${API_BASE}/achievements`),
+//   });
+// }
 
-export function useAwardAchievement() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (achievementId: string) =>
-      fetchJSON<{ awarded: boolean; achievement?: UserAchievement }>(`${API_BASE}/achievements/check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ achievementId }),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-    },
-  });
-}
+// export function useAwardAchievement() {
+//   const queryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: (achievementId: string) =>
+//       fetchJSON<{ awarded: boolean; achievement?: UserAchievement }>(`${API_BASE}/achievements/check`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ achievementId }),
+//       }),
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ["achievements"] });
+//     },
+//   });
+// }
 
 // User Settings
 export function useUserSettings() {
@@ -972,24 +969,24 @@ export function useMarkAllNotificationsRead() {
 }
 
 // ============================================
-// Daily Quotes
+// Daily Quotes (DISABLED - feature removed from frontend)
 // ============================================
 
-export interface DailyQuote {
-  id: string;
-  quote: string;
-  author: string | null;
-  category: string | null;
-  createdAt: string | null;
-}
+// export interface DailyQuote {
+//   id: string;
+//   quote: string;
+//   author: string | null;
+//   category: string | null;
+//   createdAt: string | null;
+// }
 
-export function useDailyQuote() {
-  return useQuery<DailyQuote | null>({
-    queryKey: ["quotes", "today"],
-    queryFn: () => fetchJSON<DailyQuote | null>(`${API_BASE}/quotes/today`),
-    staleTime: 1000 * 60 * 60, // Cache for 1 hour
-  });
-}
+// export function useDailyQuote() {
+//   return useQuery<DailyQuote | null>({
+//     queryKey: ["quotes", "today"],
+//     queryFn: () => fetchJSON<DailyQuote | null>(`${API_BASE}/quotes/today`),
+//     staleTime: 1000 * 60 * 60, // Cache for 1 hour
+//   });
+// }
 
 // ============================================
 // Micro Sessions (5-minute daily coaching)

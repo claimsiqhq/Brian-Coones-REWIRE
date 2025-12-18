@@ -1,28 +1,14 @@
 import MobileLayout from "@/components/layout/MobileLayout";
-import { useDashboardStats, useMoodTrends, useHabitStats, useAchievements, useAllStreaks } from "@/lib/api";
-import { Flame, Trophy, TrendingUp, BookOpen, CheckCircle2, Smile, Star, Heart, Zap, Target, Calendar } from "lucide-react";
+import { useDashboardStats, useMoodTrends, useHabitStats, useAllStreaks } from "@/lib/api";
+import { Flame, TrendingUp, BookOpen, CheckCircle2, Smile, Zap, Calendar } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const ACHIEVEMENT_DEFINITIONS = [
-  { id: "first_mood", name: "Mood Explorer", description: "Log your first mood", icon: Smile, color: "from-amber-400 to-orange-500" },
-  { id: "first_journal", name: "Journaling Journey", description: "Write your first journal entry", icon: BookOpen, color: "from-blue-400 to-indigo-500" },
-  { id: "first_habit", name: "Habit Starter", description: "Complete your first habit", icon: CheckCircle2, color: "from-green-400 to-emerald-500" },
-  { id: "streak_3", name: "On Fire", description: "3-day streak", icon: Flame, color: "from-orange-400 to-red-500" },
-  { id: "streak_7", name: "Week Warrior", description: "7-day streak", icon: Calendar, color: "from-purple-400 to-violet-500" },
-  { id: "mood_10", name: "Mood Master", description: "Log 10 moods", icon: Heart, color: "from-pink-400 to-rose-500" },
-  { id: "journal_5", name: "Reflective Soul", description: "Write 5 journal entries", icon: Star, color: "from-yellow-400 to-amber-500" },
-  { id: "habits_20", name: "Habit Champion", description: "Complete 20 habits", icon: Target, color: "from-teal-400 to-cyan-500" },
-];
 
 export default function StatsPage() {
   const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
   const { data: moodTrends, isLoading: trendsLoading } = useMoodTrends(7);
   const { data: habitStats, isLoading: habitStatsLoading } = useHabitStats();
-  const { data: earnedAchievements, isLoading: achievementsLoading } = useAchievements();
   const { data: allStreaks, isLoading: streaksLoading } = useAllStreaks();
-
-  const earnedIds = new Set(earnedAchievements?.map(a => a.achievementId) || []);
 
   const getMoodEmoji = (mood: string) => {
     const emojiMap: Record<string, string> = {
@@ -208,47 +194,6 @@ export default function StatsPage() {
             )}
           </div>
 
-          {/* Achievements */}
-          <div className="bg-deep-pine rounded-xl p-4 shadow-sm border border-forest-floor/40" data-testid="card-achievements">
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy size={18} className="text-birch" />
-              <h2 className="font-semibold text-birch">Achievements</h2>
-              <span className="ml-auto text-xs text-sage">
-                {achievementsLoading ? "..." : `${earnedIds.size}/${ACHIEVEMENT_DEFINITIONS.length}`}
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-3">
-              {ACHIEVEMENT_DEFINITIONS.map((achievement) => {
-                const isEarned = earnedIds.has(achievement.id);
-                const Icon = achievement.icon;
-                
-                return (
-                  <div 
-                    key={achievement.id}
-                    className="flex flex-col items-center gap-1"
-                    data-testid={`achievement-${achievement.id}`}
-                  >
-                    <div 
-                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                        isEarned 
-                          ? `bg-gradient-to-br from-birch to-sage shadow-md` 
-                          : 'bg-forest-floor/30'
-                      }`}
-                    >
-                      <Icon 
-                        size={22} 
-                        className={isEarned ? 'text-night-forest' : 'text-sage/40'} 
-                      />
-                    </div>
-                    <span className={`text-[9px] text-center leading-tight ${isEarned ? 'text-birch font-medium' : 'text-sage/50'}`}>
-                      {achievement.name}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </div>
     </MobileLayout>

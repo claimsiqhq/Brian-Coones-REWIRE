@@ -23,21 +23,18 @@ const defaultFeatureFlags: FeatureFlags = {
   reflections: true,
   groundingPractice: true,
   coachBrian: true,
-  visionBoard: true,
-  achievements: true,
-  release: true,
+  visionBoard: false,
+  achievements: false,
+  release: false,
   brotherhood: true,
 };
 
-const featureLabels: Record<keyof FeatureFlags, string> = {
+const featureLabels: Partial<Record<keyof FeatureFlags, string>> = {
   groundCheck: "Daily Ground Check",
   dailyAnchors: "Daily Anchors (Habits)",
   reflections: "Reflections (Journal)",
   groundingPractice: "Grounding Practice (Breathing)",
   coachBrian: "Coach Brian (AI Chat)",
-  visionBoard: "Vision Board",
-  achievements: "Achievements",
-  release: "Release (Vent)",
   brotherhood: "Brotherhood (Guide Features)",
 };
 

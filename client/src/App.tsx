@@ -5,7 +5,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useTheme } from "next-themes";
-import { CelebrationProvider } from "@/hooks/useCelebration";
 import { AppProfileProvider } from "@/hooks/useAppProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserSettings } from "@/lib/api";
@@ -25,7 +24,6 @@ const Voice = lazy(() => import("@/pages/voice"));
 const Profile = lazy(() => import("@/pages/profile"));
 const Focus = lazy(() => import("@/pages/focus"));
 const Stats = lazy(() => import("@/pages/stats"));
-const Vision = lazy(() => import("@/pages/vision"));
 const CoachDashboard = lazy(() => import("@/pages/coach-dashboard"));
 const JoinCoach = lazy(() => import("@/pages/join-coach"));
 const Templates = lazy(() => import("@/pages/templates"));
@@ -76,7 +74,6 @@ function AuthenticatedRouter() {
           <Route path="/profile" component={Profile} />
           <Route path="/focus" component={Focus} />
           <Route path="/stats" component={Stats} />
-          <Route path="/vision" component={Vision} />
           <Route path="/clients" component={CoachDashboard} />
           <Route path="/join/:code" component={JoinCoach} />
           <Route path="/templates" component={Templates} />
@@ -143,10 +140,8 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <AppProfileProvider>
           <TooltipProvider>
-            <CelebrationProvider>
-              <Toaster />
-              <AppContent />
-            </CelebrationProvider>
+            <Toaster />
+            <AppContent />
           </TooltipProvider>
         </AppProfileProvider>
       </ThemeProvider>

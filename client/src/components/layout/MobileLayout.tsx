@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookHeart, Mic, Wind, User, BarChart3, Eye, Users, TreeDeciduous, Library, Activity } from "lucide-react";
+import { Home, BookHeart, Mic, Wind, User, BarChart3, Eye, Users, Library, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
@@ -37,7 +37,6 @@ export default function MobileLayout({ children, fullWidth = false }: MobileLayo
   ];
 
   const allRightNavItemsClient: NavItem[] = [
-    { icon: TreeDeciduous, label: "Vision", path: "/vision", featureFlag: "visionBoard" },
     { icon: Activity, label: "Metrics", path: "/metrics", featureFlag: "achievements" },
     { icon: User, label: "Profile", path: "/profile" }, // Always visible
   ];

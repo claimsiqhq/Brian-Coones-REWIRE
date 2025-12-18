@@ -1,41 +1,33 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Smile, Frown, Meh, Sun, Cloud, ChevronRight, AlertCircle, CheckCircle2, Circle, Flame, BookHeart, Target, TrendingUp, Trophy, Quote, Mic, Sparkles, Calendar, Clock, Video, Sunrise, Moon, Zap, Heart, RefreshCw, Award, Users } from "lucide-react";
+import { Smile, Frown, Meh, Sun, Cloud, ChevronRight, CheckCircle2, Circle, Flame, BookHeart, Target, TrendingUp, Trophy, Mic, Sparkles, Calendar, Clock, Video, Sunrise, Moon, Zap, Heart, RefreshCw, Award, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import bgImage from "@assets/generated_images/calming_abstract_mobile_background.png";
-import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useCreateVentMessage, useMoodTrends, useHabitStats, useCreateHabit, useAchievements, useDashboardStats, useDailyQuote, useTodayMicroSession, useUpcomingSessions, useTodayRituals, useGamification, useQuickAction, useMyChallenge } from "@/lib/api";
+import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useMoodTrends, useHabitStats, useCreateHabit, useDashboardStats, useTodayMicroSession, useUpcomingSessions, useTodayRituals, useGamification, useQuickAction, useMyChallenge } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
 import { useToast } from "@/hooks/use-toast";
-import { useCelebration, ACHIEVEMENT_CELEBRATIONS } from "@/hooks/useCelebration";
 import { format, isToday, isTomorrow, formatDistanceToNow } from "date-fns";
 
 export default function Home() {
-  const [showCrisis, setShowCrisis] = useState(false);
   const [showAddHabit, setShowAddHabit] = useState(false);
-  const [ventText, setVentText] = useState("");
   const [newHabitLabel, setNewHabitLabel] = useState("");
   const { user } = useAuth();
   const { isFeatureEnabled } = useAppProfile();
   const { toast } = useToast();
-  const { celebrate, triggerConfetti } = useCelebration();
-  const previousAchievementCountRef = useRef<number | null>(null);
 
   // Feature flags
-  const showRelease = isFeatureEnabled("release");
   const showGroundCheck = isFeatureEnabled("groundCheck");
   const showDailyAnchors = isFeatureEnabled("dailyAnchors");
   const showCoachBrian = isFeatureEnabled("coachBrian");
-  const showAchievements = isFeatureEnabled("achievements");
 
   const today = useMemo(() => {
     const date = new Date();
@@ -47,9 +39,7 @@ export default function Home() {
   const { data: todayMood } = useTodayMood();
   const { data: moodTrends = [] } = useMoodTrends(7);
   const { data: habitStats } = useHabitStats();
-  const { data: achievements = [] } = useAchievements();
   const { data: dashboardStats } = useDashboardStats();
-  const { data: dailyQuote } = useDailyQuote();
   const { data: microSessionData } = useTodayMicroSession();
   const { data: todayRituals = [] } = useTodayRituals();
   const { data: gamification } = useGamification();
@@ -73,46 +63,20 @@ export default function Home() {
   
   const toggleHabitMutation = useToggleHabit();
   const createMoodMutation = useCreateMood();
-  const createVentMutation = useCreateVentMessage();
   const createHabitMutation = useCreateHabit();
   const nextSession = isClient && upcomingSessions.length > 0 ? upcomingSessions[0] : null;
   
-  const formatSessionDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatSessionDate = (dateInput: string | Date) => {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
     return format(date, "EEE, MMM d");
   };
   
-  const formatSessionTime = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatSessionTime = (dateInput: string | Date) => {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     return format(date, "h:mm a");
   };
-
-  // Watch for new achievements and trigger celebrations
-  useEffect(() => {
-    if (achievements.length > 0) {
-      if (previousAchievementCountRef.current !== null && achievements.length > previousAchievementCountRef.current) {
-        // New achievement earned! Find the latest one and celebrate
-        const latestAchievement = achievements[achievements.length - 1];
-        const celebrationInfo = ACHIEVEMENT_CELEBRATIONS[latestAchievement.achievementId];
-        if (celebrationInfo) {
-          celebrate({
-            title: celebrationInfo.title,
-            description: celebrationInfo.description,
-            icon: <span className="text-4xl">{celebrationInfo.emoji}</span>,
-          });
-        } else {
-          // Generic celebration for unknown achievements
-          celebrate({
-            title: "Achievement Unlocked!",
-            description: "You've earned a new achievement. Keep up the great work!",
-          });
-        }
-      }
-      previousAchievementCountRef.current = achievements.length;
-    }
-  }, [achievements, celebrate]);
 
   // Get user display name and initials
   const displayName = user?.name || user?.firstName || user?.username || "Friend";
@@ -163,21 +127,6 @@ export default function Home() {
         });
       }
     });
-  };
-
-  const handleSendVent = () => {
-    if (ventText.trim()) {
-      createVentMutation.mutate(ventText, {
-        onSuccess: () => {
-          toast({
-            title: "Message sent",
-            description: "Your coach will see this soon.",
-          });
-        }
-      });
-      setVentText("");
-      setShowCrisis(false);
-    }
   };
 
   const handleAddHabit = () => {
@@ -264,19 +213,6 @@ export default function Home() {
                   <span className="text-xs font-bold text-birch">Lv.{gamification.currentLevel}</span>
                 </div>
               )}
-              {showRelease && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="bg-sage/20 hover:bg-sage/30 text-birch rounded-full px-3 py-1.5 h-auto gap-1.5 backdrop-blur-sm border border-sage/20"
-                  onClick={() => setShowCrisis(true)}
-                  data-testid="button-crisis-mode"
-                  aria-label="Open release space - send a message to your coach"
-                >
-                  <AlertCircle className="w-4 h-4" aria-hidden="true" />
-                  <span className="text-xs font-medium">Release</span>
-                </Button>
-              )}
               <Link href="/profile">
                 <Avatar className="h-11 w-11 border-3 border-sage/30 shadow-xl cursor-pointer ring-2 ring-sage/20" aria-label="Go to profile">
                   {user?.profileImageUrl && <AvatarImage src={user.profileImageUrl} alt={displayName} />}
@@ -319,17 +255,6 @@ export default function Home() {
             </Link>
           )}
 
-          {/* Compact Daily Quote - Inline banner style */}
-          {dailyQuote && (
-            <div className="shrink-0 bg-gradient-to-r from-deep-pine via-forest-floor/20 to-deep-pine rounded-xl px-4 py-3 shadow-sm border border-forest-floor/30">
-              <div className="flex items-start gap-2">
-                <Quote className="w-4 h-4 text-sage shrink-0 mt-0.5" />
-                <p className="text-xs text-birch/80 italic leading-relaxed line-clamp-2" data-testid="daily-quote">
-                  "{dailyQuote.quote}" {dailyQuote.author && <span className="text-sage/70 not-italic">— {dailyQuote.author}</span>}
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Quick Actions - Regulate/Reframe/Reset */}
           {showCoachBrian && (
@@ -683,36 +608,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {/* Release Modal */}
-      <Dialog open={showCrisis} onOpenChange={setShowCrisis}>
-        <DialogContent className="sm:max-w-[425px] w-[90%] rounded-2xl border-none bg-deep-pine">
-          <DialogHeader>
-            <DialogTitle className="text-birch text-xl">Time to release</DialogTitle>
-            <DialogDescription className="text-sage/80">
-              This is a safe space. Let it out. Your coach will witness this.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Textarea 
-              placeholder="What weight are you carrying?" 
-              className="min-h-[100px] bg-night-forest border-forest-floor focus-visible:ring-sage/30 text-birch placeholder:text-sage/50"
-              value={ventText}
-              onChange={(e) => setVentText(e.target.value)}
-              data-testid="input-vent-message"
-            />
-            <div className="flex justify-center py-4">
-              <Button variant="outline" size="lg" className="h-16 w-16 rounded-full border-sage/30 bg-night-forest text-sage hover:bg-forest-floor/30 hover:text-birch shadow-sm" data-testid="button-record-voice">
-                <div className="w-4 h-4 rounded-full bg-birch animate-pulse" />
-              </Button>
-            </div>
-          </div>
-          <DialogFooter className="flex-row gap-2 sm:justify-end">
-            <Button variant="ghost" onClick={() => setShowCrisis(false)} className="flex-1 text-sage hover:bg-forest-floor/30 hover:text-birch" data-testid="button-cancel-vent">Cancel</Button>
-            <Button className="flex-1 bg-birch hover:bg-birch/80 text-night-forest shadow-md border-none" onClick={handleSendVent} data-testid="button-send-vent">Release to Coach</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Add Anchor Modal */}
       <Dialog open={showAddHabit} onOpenChange={setShowAddHabit}>

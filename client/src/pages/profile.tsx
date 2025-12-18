@@ -36,9 +36,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserSettings, useUpdateUserSettings, useMyCoach, useUpdateUserProfile, useAchievements, useDeleteAllUserData, exportUserData, useSessions } from "@/lib/api";
+import { useUserSettings, useUpdateUserSettings, useMyCoach, useUpdateUserProfile, useDeleteAllUserData, exportUserData, useSessions } from "@/lib/api";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
-import { Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
@@ -48,7 +47,6 @@ export default function Profile() {
   const isAdmin = user?.role === "superadmin";
   const { data: settings, isLoading } = useUserSettings();
   const { data: myCoach } = useMyCoach();
-  const { data: achievements = [] } = useAchievements();
   
   const isClient = !isCoach && !isAdmin && !!user;
   const { data: sessions = [] } = useSessions({ enabled: isClient });
@@ -82,17 +80,6 @@ export default function Profile() {
   const deleteDataMutation = useDeleteAllUserData();
   const { toast } = useToast();
   const { setTheme } = useTheme();
-
-  const achievementMeta: Record<string, { label: string; icon: string; color: string }> = {
-    first_mood: { label: "First Ground Check", icon: "😊", color: "bg-birch/20 text-birch" },
-    first_journal: { label: "First Reflection", icon: "📝", color: "bg-sage/20 text-sage" },
-    first_habit: { label: "First Anchor", icon: "✓", color: "bg-forest-floor/30 text-sage" },
-    streak_3: { label: "3-Day Streak", icon: "🔥", color: "bg-birch/30 text-birch" },
-    streak_7: { label: "Week Warrior", icon: "⚡", color: "bg-sage/30 text-sage" },
-    mood_10: { label: "Ground Master", icon: "🎭", color: "bg-birch/20 text-birch" },
-    journal_5: { label: "Reflector", icon: "📖", color: "bg-sage/20 text-sage" },
-    habits_20: { label: "Anchor Hero", icon: "🏆", color: "bg-birch/30 text-birch" },
-  };
 
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -544,39 +531,6 @@ export default function Profile() {
                 <p className="text-[10px] text-muted-foreground px-1 pt-1">
                   These settings control what your coach can see about your progress.
                 </p>
-              </div>
-            )}
-
-            {achievements.length > 0 && (
-              <div className="space-y-1">
-                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Achievements</h3>
-                <Card className="border border-forest-floor/40 shadow-sm overflow-hidden bg-deep-pine">
-                  <div className="p-3">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Trophy className="w-4 h-4 text-yellow-500" />
-                      <span className="font-medium text-xs">{achievements.length} Badge{achievements.length !== 1 ? 's' : ''} Earned</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2" data-testid="achievements-list">
-                      {achievements.map((achievement) => {
-                        const meta = achievementMeta[achievement.achievementId] || { 
-                          label: achievement.achievementId, 
-                          icon: "🏅", 
-                          color: "bg-gray-100 text-gray-600" 
-                        };
-                        return (
-                          <div
-                            key={achievement.id}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full ${meta.color}`}
-                            data-testid={`achievement-badge-${achievement.achievementId}`}
-                          >
-                            <span className="text-sm">{meta.icon}</span>
-                            <span className="text-[10px] font-medium">{meta.label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </Card>
               </div>
             )}
 
