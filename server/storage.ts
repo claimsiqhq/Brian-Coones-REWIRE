@@ -194,7 +194,7 @@ export interface IStorage {
   createVentMessage(message: InsertVentMessage): Promise<VentMessage>;
 
   // Stats & Achievements
-  getMoodTrends(userId: string, days: number): Promise<{ date: string; mood: string; score: number }[]>;
+  getMoodTrends(userId: string, days: number): Promise<{ date: string; mood: string; score: number; energyLevel: number | null; stressLevel: number | null }[]>;
   getHabitStats(userId: string): Promise<{ totalHabits: number; completedToday: number; currentStreak: number; longestStreak: number }>;
   getDashboardStats(userId: string): Promise<{ totalMoodCheckins: number; totalJournalEntries: number; totalHabitsCompleted: number; currentStreak: number }>;
   getAllStreaks(userId: string): Promise<{ 
@@ -670,7 +670,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Stats & Achievements
-  async getMoodTrends(userId: string, days: number): Promise<{ date: string; mood: string; score: number }[]> {
+  async getMoodTrends(userId: string, days: number): Promise<{ date: string; mood: string; score: number; energyLevel: number | null; stressLevel: number | null }[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
@@ -692,7 +692,9 @@ export class DatabaseStorage implements IStorage {
     return result.map(m => ({
       date: new Date(m.timestamp).toISOString().split('T')[0],
       mood: m.mood,
-      score: moodScores[m.mood.toLowerCase()] || 3
+      score: moodScores[m.mood.toLowerCase()] || 3,
+      energyLevel: m.energyLevel,
+      stressLevel: m.stressLevel
     }));
   }
 

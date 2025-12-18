@@ -2535,12 +2535,7 @@ export async function registerRoutes(
         reset: `The user needs a quick mental reset to boost their energy and focus. ${currentState ? `They're feeling: ${currentState}. ` : ""}${goalsContext}Provide a brief energizing technique or micro-action they can take right now. Keep it punchy and motivating.`,
       };
 
-      const messages: ChatMessage[] = [
-        { role: "system", content: contextMessage },
-        { role: "user", content: actionPrompts[actionType] },
-      ];
-
-      const response = await getChatResponse(messages);
+      const response = await getChatResponse(actionPrompts[actionType], context, []);
 
       // Save the message exchange
       await storage.addAiMessage({

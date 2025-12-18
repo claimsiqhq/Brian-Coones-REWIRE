@@ -29,11 +29,11 @@ export function useTodayMood() {
 export function useCreateMood() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (mood: string) =>
+    mutationFn: (data: { mood: string; energyLevel?: number; stressLevel?: number }) =>
       fetchJSON<Mood>(`${API_BASE}/moods`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mood }),
+        body: JSON.stringify(data),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["moods"] });
@@ -306,6 +306,8 @@ export interface MoodTrend {
   date: string;
   mood: string;
   score: number;
+  energyLevel: number | null;
+  stressLevel: number | null;
 }
 
 export interface HabitStats {

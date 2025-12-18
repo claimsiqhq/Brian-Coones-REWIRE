@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import bgImage from "@assets/generated_images/calming_abstract_mobile_background.png";
-import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useMoodTrends, useHabitStats, useCreateHabit, useDashboardStats, useTodayMicroSession, useUpcomingSessions, useTodayRituals, useGamification, useQuickAction, useMyChallenge } from "@/lib/api";
+import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useMoodTrends, useHabitStats, useCreateHabit, useDashboardStats, useTodayMicroSession, useUpcomingSessions, useTodayRituals, useGamification, useQuickAction, useMyChallenge, useUserGoals } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +44,7 @@ export default function Home() {
   const { data: todayRituals = [] } = useTodayRituals();
   const { data: gamification } = useGamification();
   const { data: myChallenges = [] } = useMyChallenge();
+  const { data: userGoals = [] } = useUserGoals();
 
   const isClient = !!user && user.role !== "coach" && user.role !== "admin";
   const { data: upcomingSessions = [] } = useUpcomingSessions({ enabled: isClient });
@@ -85,10 +86,18 @@ export default function Home() {
     : user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "U";
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [energyLevel, setEnergyLevel] = useState<number>(3);
+  const [stressLevel, setStressLevel] = useState<number>(3);
 
   useEffect(() => {
     if (todayMood) {
       setSelectedMood(todayMood.mood);
+      if (todayMood.energyLevel !== null && todayMood.energyLevel !== undefined) {
+        setEnergyLevel(todayMood.energyLevel);
+      }
+      if (todayMood.stressLevel !== null && todayMood.stressLevel !== undefined) {
+        setStressLevel(todayMood.stressLevel);
+      }
     }
   }, [todayMood]);
 
@@ -119,11 +128,11 @@ export default function Home() {
 
   const handleMoodSelect = (mood: string) => {
     setSelectedMood(mood);
-    createMoodMutation.mutate(mood, {
+    createMoodMutation.mutate({ mood, energyLevel, stressLevel }, {
       onSuccess: () => {
         toast({
-          title: "Mood logged!",
-          description: `You're feeling ${mood.toLowerCase()} today.`,
+          title: "Ground Check logged!",
+          description: `Mood: ${mood.toLowerCase()}, Energy: ${energyLevel}/5, Stress: ${stressLevel}/5`,
         });
       }
     });
@@ -156,6 +165,38 @@ export default function Home() {
     if (hour < 12) return "Good Morning";
     if (hour < 18) return "Good Afternoon";
     return "Good Evening";
+  };
+
+  const getGoalProgress = (goalType: string): number => {
+    if (!moodTrends || moodTrends.length === 0) return 0;
+    const recentMoods = moodTrends.slice(-7);
+    
+    if (goalType === "energy") {
+      const avgEnergy = recentMoods.reduce((sum, m) => sum + (m.energyLevel ?? 3), 0) / recentMoods.length;
+      return Math.round((avgEnergy / 5) * 100);
+    }
+    if (goalType === "stress_management") {
+      const avgStress = recentMoods.reduce((sum, m) => sum + (m.stressLevel ?? 3), 0) / recentMoods.length;
+      return Math.round(((5 - avgStress) / 5) * 100);
+    }
+    const habitProgress = habitsWithCompletions.filter(h => h.completed).length / (habitsWithCompletions.length || 1);
+    return Math.round(habitProgress * 100);
+  };
+
+  const goalIcons: Record<string, typeof Zap> = {
+    energy: Zap,
+    stress_management: Heart,
+    focus: Target,
+    sleep: Moon,
+    emotional_regulation: RefreshCw,
+  };
+
+  const goalLabels: Record<string, string> = {
+    energy: "Energy",
+    stress_management: "Stress",
+    focus: "Focus",
+    sleep: "Sleep",
+    emotional_regulation: "Balance",
   };
 
   const handleQuickAction = async (actionType: "regulate" | "reframe" | "reset") => {
@@ -493,6 +534,50 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
+
+                {/* Energy & Stress Levels */}
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-medium text-sage/70 flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> Energy
+                      </label>
+                      <span className="text-xs font-bold text-birch">{energyLevel}/5</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => setEnergyLevel(level)}
+                          data-testid={`button-energy-${level}`}
+                          className={`flex-1 h-2 rounded-full transition-all ${
+                            level <= energyLevel ? 'bg-birch' : 'bg-forest-floor/40'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-medium text-sage/70 flex items-center gap-1">
+                        <Heart className="w-3 h-3" /> Stress
+                      </label>
+                      <span className="text-xs font-bold text-birch">{stressLevel}/5</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => setStressLevel(level)}
+                          data-testid={`button-stress-${level}`}
+                          className={`flex-1 h-2 rounded-full transition-all ${
+                            level <= stressLevel ? 'bg-rose-400' : 'bg-forest-floor/40'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 
                 {/* 7-Day Ground History */}
                 {moodTrends.length > 0 && (
@@ -605,6 +690,49 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
+          )}
+
+          {/* Goals Progress */}
+          {userGoals.filter(g => g.isActive).length > 0 && (
+            <Card className="border-none shadow-lg bg-deep-pine/95 backdrop-blur-md overflow-hidden">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-semibold text-sm text-sage flex items-center gap-2">
+                    <Target className="w-4 h-4" /> Your Goals
+                  </h2>
+                  <Link href="/profile">
+                    <Button variant="ghost" size="sm" className="text-sage/70 h-6 text-xs">
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {userGoals.filter(g => g.isActive).slice(0, 3).map((goal) => {
+                    const Icon = goalIcons[goal.goalType] || Target;
+                    const progress = getGoalProgress(goal.goalType);
+                    return (
+                      <div key={goal.id} className="flex items-center gap-3" data-testid={`goal-progress-${goal.id}`}>
+                        <div className="w-8 h-8 rounded-full bg-forest-floor/40 flex items-center justify-center shrink-0">
+                          <Icon className="w-4 h-4 text-sage" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-birch truncate">{goalLabels[goal.goalType] || goal.goalType}</span>
+                            <span className="text-xs text-sage/70">{progress}%</span>
+                          </div>
+                          <div className="h-1.5 bg-forest-floor/30 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-sage to-birch rounded-full transition-all duration-500" 
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
