@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 
-// Using user's own OpenAI API key for all features
-// Support Replit AI integrations with custom base URL
+// Using Replit AI Integrations for OpenAI access
+// Note: TTS features require a personal OpenAI API key and are not supported by AI Integrations
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined,
 });
 
