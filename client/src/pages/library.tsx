@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
@@ -168,7 +168,7 @@ function PracticeCard({
 }
 
 export default function Library() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [activeType, setActiveType] = useState<string | undefined>(undefined);
   const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
   const [activeDuration, setActiveDuration] = useState<string | undefined>(undefined);
@@ -189,7 +189,7 @@ export default function Library() {
   const sessionCounts = new Map(stats?.map((s) => [s.practiceId, s.count]) || []);
 
   const handleStartPractice = (practice: Practice) => {
-    navigate(`/focus?practiceId=${practice.id}`);
+    setLocation(`/focus?practiceId=${practice.id}`);
   };
 
   const handleToggleFavorite = (practiceId: string) => {
