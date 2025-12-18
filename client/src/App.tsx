@@ -30,6 +30,10 @@ const CoachDashboard = lazy(() => import("@/pages/coach-dashboard"));
 const JoinCoach = lazy(() => import("@/pages/join-coach"));
 const Templates = lazy(() => import("@/pages/templates"));
 const AdminPanel = lazy(() => import("@/pages/admin-panel"));
+const Library = lazy(() => import("@/pages/library"));
+const Challenges = lazy(() => import("@/pages/challenges"));
+const Events = lazy(() => import("@/pages/events"));
+const Metrics = lazy(() => import("@/pages/metrics"));
 
 // ThemeSync component to sync settings with theme
 function ThemeSync() {
@@ -77,6 +81,10 @@ function AuthenticatedRouter() {
           <Route path="/join/:code" component={JoinCoach} />
           <Route path="/templates" component={Templates} />
           <Route path="/admin" component={AdminPanel} />
+          <Route path="/library" component={Library} />
+          <Route path="/challenges" component={Challenges} />
+          <Route path="/events" component={Events} />
+          <Route path="/metrics" component={Metrics} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>

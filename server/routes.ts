@@ -1828,5 +1828,753 @@ export async function registerRoutes(
     }
   });
 
+  // ============================================
+  // NEW FEATURE ROUTES - Dashboard Evolution
+  // ============================================
+
+  // ========== DAILY METRICS ==========
+
+  // Get today's metrics
+  app.get("/api/metrics/today", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const metrics = await storage.getTodayMetrics(userId);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Get today metrics error:", error);
+      res.status(500).json({ error: "Failed to get today's metrics" });
+    }
+  });
+
+  // Get metrics for a date range
+  app.get("/api/metrics/range", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { startDate, endDate } = req.query;
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "startDate and endDate required" });
+      }
+      const metrics = await storage.getMetricsByDateRange(userId, startDate as string, endDate as string);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Get metrics range error:", error);
+      res.status(500).json({ error: "Failed to get metrics" });
+    }
+  });
+
+  // Create or update daily metrics
+  app.post("/api/metrics", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const date = req.body.date || getTodayDateString();
+      const { moodScore, energyScore, stressScore, sleepHours, sleepQuality, notes } = req.body;
+
+      const metrics = await storage.createOrUpdateDailyMetrics(userId, date, {
+        moodScore, energyScore, stressScore, sleepHours, sleepQuality, notes
+      });
+
+      // Award XP for completing check-in
+      await storage.awardXp(userId, 10, "daily_checkin", metrics.id, "Daily check-in completed");
+
+      res.json(metrics);
+    } catch (error) {
+      console.error("Create metrics error:", error);
+      res.status(500).json({ error: "Failed to save metrics" });
+    }
+  });
+
+  // Get weekly average metrics
+  app.get("/api/metrics/weekly", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      // Get the start of current week (Monday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - diff);
+      const weekStart = monday.toISOString().split('T')[0];
+
+      const averages = await storage.getWeeklyMetricsAverage(userId, weekStart);
+      res.json({ weekStart, ...averages });
+    } catch (error) {
+      console.error("Get weekly metrics error:", error);
+      res.status(500).json({ error: "Failed to get weekly metrics" });
+    }
+  });
+
+  // ========== DAILY RITUALS ==========
+
+  // Get today's rituals
+  app.get("/api/rituals/today", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const rituals = await storage.getTodayRituals(userId);
+      res.json(rituals);
+    } catch (error) {
+      console.error("Get today rituals error:", error);
+      res.status(500).json({ error: "Failed to get today's rituals" });
+    }
+  });
+
+  // Start or update a ritual
+  app.post("/api/rituals", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const date = req.body.date || getTodayDateString();
+      const { ritualType, energyBefore, notes, practicesCompleted } = req.body;
+
+      if (!ritualType || !["morning", "evening"].includes(ritualType)) {
+        return res.status(400).json({ error: "Valid ritualType required (morning or evening)" });
+      }
+
+      const ritual = await storage.createOrUpdateRitual({
+        userId, date, ritualType, energyBefore, notes,
+        practicesCompleted: practicesCompleted || [],
+        completed: false
+      });
+      res.json(ritual);
+    } catch (error) {
+      console.error("Create ritual error:", error);
+      res.status(500).json({ error: "Failed to save ritual" });
+    }
+  });
+
+  // Complete a ritual
+  app.post("/api/rituals/:id/complete", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { energyAfter } = req.body;
+      const ritual = await storage.completeRitual(req.params.id, energyAfter);
+
+      // Award XP for completing ritual
+      const xpAmount = ritual.ritualType === "morning" ? 15 : 15;
+      await storage.awardXp(userId, xpAmount, "ritual_complete", ritual.id, `${ritual.ritualType} ritual completed`);
+
+      res.json(ritual);
+    } catch (error) {
+      console.error("Complete ritual error:", error);
+      res.status(500).json({ error: "Failed to complete ritual" });
+    }
+  });
+
+  // ========== PRACTICE LIBRARY ==========
+
+  // Get all practices
+  app.get("/api/practices", isAuthenticated, async (req, res) => {
+    try {
+      const { type, category, durationCategory } = req.query;
+      const practices = await storage.getAllPractices({
+        type: type as string | undefined,
+        category: category as string | undefined,
+        durationCategory: durationCategory as string | undefined,
+      });
+      res.json(practices);
+    } catch (error) {
+      console.error("Get practices error:", error);
+      res.status(500).json({ error: "Failed to get practices" });
+    }
+  });
+
+  // Get single practice
+  app.get("/api/practices/:id", isAuthenticated, async (req, res) => {
+    try {
+      const practice = await storage.getPractice(req.params.id);
+      if (!practice) {
+        return res.status(404).json({ error: "Practice not found" });
+      }
+      res.json(practice);
+    } catch (error) {
+      console.error("Get practice error:", error);
+      res.status(500).json({ error: "Failed to get practice" });
+    }
+  });
+
+  // Get user favorites
+  app.get("/api/practices/favorites/list", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const favorites = await storage.getUserFavorites(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("Get favorites error:", error);
+      res.status(500).json({ error: "Failed to get favorites" });
+    }
+  });
+
+  // Toggle favorite
+  app.post("/api/practices/:id/favorite", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const isFavorited = await storage.toggleFavorite(userId, req.params.id);
+      res.json({ isFavorited });
+    } catch (error) {
+      console.error("Toggle favorite error:", error);
+      res.status(500).json({ error: "Failed to toggle favorite" });
+    }
+  });
+
+  // Log practice session
+  app.post("/api/practices/:id/session", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { durationSeconds, completed, moodBefore, moodAfter } = req.body;
+
+      const session = await storage.createPracticeSession({
+        userId,
+        practiceId: req.params.id,
+        durationSeconds: durationSeconds || 0,
+        completed: completed || false,
+        moodBefore,
+        moodAfter,
+      });
+
+      // Award XP for completing practice
+      if (completed) {
+        await storage.awardXp(userId, 20, "practice_complete", session.id, "Practice completed");
+      }
+
+      res.json(session);
+    } catch (error) {
+      console.error("Create practice session error:", error);
+      res.status(500).json({ error: "Failed to save practice session" });
+    }
+  });
+
+  // Get user's practice history
+  app.get("/api/practices/history/list", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const limit = parseInt(req.query.limit as string) || 20;
+      const sessions = await storage.getUserPracticeSessions(userId, limit);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Get practice history error:", error);
+      res.status(500).json({ error: "Failed to get practice history" });
+    }
+  });
+
+  // Get practice usage stats
+  app.get("/api/practices/stats/usage", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const stats = await storage.getPracticeUsageStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Get practice stats error:", error);
+      res.status(500).json({ error: "Failed to get practice stats" });
+    }
+  });
+
+  // ========== CHALLENGES ==========
+
+  // Get all challenges
+  app.get("/api/challenges", isAuthenticated, async (req, res) => {
+    try {
+      const { type, category, active } = req.query;
+      const challenges = await storage.getChallenges({
+        type: type as string | undefined,
+        category: category as string | undefined,
+        active: active === "true" ? true : active === "false" ? false : undefined,
+      });
+      res.json(challenges);
+    } catch (error) {
+      console.error("Get challenges error:", error);
+      res.status(500).json({ error: "Failed to get challenges" });
+    }
+  });
+
+  // Get single challenge
+  app.get("/api/challenges/:id", isAuthenticated, async (req, res) => {
+    try {
+      const challenge = await storage.getChallenge(req.params.id);
+      if (!challenge) {
+        return res.status(404).json({ error: "Challenge not found" });
+      }
+      res.json(challenge);
+    } catch (error) {
+      console.error("Get challenge error:", error);
+      res.status(500).json({ error: "Failed to get challenge" });
+    }
+  });
+
+  // Create challenge (coach only)
+  app.post("/api/challenges", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "coach" && user.role !== "admin" && user.role !== "superadmin") {
+        return res.status(403).json({ error: "Only coaches can create challenges" });
+      }
+
+      const challenge = await storage.createChallenge({
+        ...req.body,
+        createdBy: user.id,
+      });
+      res.json(challenge);
+    } catch (error) {
+      console.error("Create challenge error:", error);
+      res.status(500).json({ error: "Failed to create challenge" });
+    }
+  });
+
+  // Join challenge
+  app.post("/api/challenges/:id/join", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const participant = await storage.joinChallenge(req.params.id, userId);
+      res.json(participant);
+    } catch (error) {
+      console.error("Join challenge error:", error);
+      res.status(500).json({ error: "Failed to join challenge" });
+    }
+  });
+
+  // Leave challenge
+  app.post("/api/challenges/:id/leave", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      await storage.leaveChallenge(req.params.id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Leave challenge error:", error);
+      res.status(500).json({ error: "Failed to leave challenge" });
+    }
+  });
+
+  // Get user's challenges
+  app.get("/api/challenges/my/list", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const challenges = await storage.getUserChallenges(userId);
+      res.json(challenges);
+    } catch (error) {
+      console.error("Get user challenges error:", error);
+      res.status(500).json({ error: "Failed to get your challenges" });
+    }
+  });
+
+  // Challenge check-in
+  app.post("/api/challenges/:id/checkin", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { participantId, completed, energyBefore, energyAfter, notes } = req.body;
+      const date = getTodayDateString();
+
+      const checkin = await storage.createChallengeCheckin({
+        participantId,
+        date,
+        completed: completed || false,
+        energyBefore,
+        energyAfter,
+        notes,
+      });
+
+      // Award XP for challenge check-in
+      if (completed) {
+        await storage.awardXp(userId, 25, "challenge_checkin", checkin.id, "Challenge day completed");
+      }
+
+      res.json(checkin);
+    } catch (error) {
+      console.error("Challenge checkin error:", error);
+      res.status(500).json({ error: "Failed to check in" });
+    }
+  });
+
+  // Get challenge leaderboard
+  app.get("/api/challenges/:id/leaderboard", isAuthenticated, async (req, res) => {
+    try {
+      const leaderboard = await storage.getChallengeLeaderboard(req.params.id);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Get leaderboard error:", error);
+      res.status(500).json({ error: "Failed to get leaderboard" });
+    }
+  });
+
+  // ========== GAMIFICATION ==========
+
+  // Get user's gamification stats
+  app.get("/api/gamification", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const gamification = await storage.getUserGamification(userId);
+      res.json(gamification);
+    } catch (error) {
+      console.error("Get gamification error:", error);
+      res.status(500).json({ error: "Failed to get gamification stats" });
+    }
+  });
+
+  // Get XP history
+  app.get("/api/gamification/xp-history", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const limit = parseInt(req.query.limit as string) || 50;
+      const history = await storage.getXpHistory(userId, limit);
+      res.json(history);
+    } catch (error) {
+      console.error("Get XP history error:", error);
+      res.status(500).json({ error: "Failed to get XP history" });
+    }
+  });
+
+  // ========== USER GOALS ==========
+
+  // Get user goals
+  app.get("/api/goals", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const goals = await storage.getUserGoals(userId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Get goals error:", error);
+      res.status(500).json({ error: "Failed to get goals" });
+    }
+  });
+
+  // Create goal
+  app.post("/api/goals", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { goalType, priority, targetDescription } = req.body;
+
+      if (!goalType) {
+        return res.status(400).json({ error: "goalType is required" });
+      }
+
+      const goal = await storage.createUserGoal({
+        userId,
+        goalType,
+        priority: priority || 1,
+        targetDescription,
+      });
+      res.json(goal);
+    } catch (error) {
+      console.error("Create goal error:", error);
+      res.status(500).json({ error: "Failed to create goal" });
+    }
+  });
+
+  // Update goal
+  app.patch("/api/goals/:id", isAuthenticated, async (req, res) => {
+    try {
+      const goal = await storage.updateUserGoal(req.params.id, req.body);
+      res.json(goal);
+    } catch (error) {
+      console.error("Update goal error:", error);
+      res.status(500).json({ error: "Failed to update goal" });
+    }
+  });
+
+  // Delete goal
+  app.delete("/api/goals/:id", isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteUserGoal(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete goal error:", error);
+      res.status(500).json({ error: "Failed to delete goal" });
+    }
+  });
+
+  // ========== EVENTS ==========
+
+  // Get events
+  app.get("/api/events", isAuthenticated, async (req, res) => {
+    try {
+      const { type, upcoming } = req.query;
+      const events = await storage.getEvents({
+        type: type as string | undefined,
+        upcoming: upcoming === "true",
+        published: true,
+      });
+      res.json(events);
+    } catch (error) {
+      console.error("Get events error:", error);
+      res.status(500).json({ error: "Failed to get events" });
+    }
+  });
+
+  // Get single event
+  app.get("/api/events/:id", isAuthenticated, async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      res.json(event);
+    } catch (error) {
+      console.error("Get event error:", error);
+      res.status(500).json({ error: "Failed to get event" });
+    }
+  });
+
+  // Create event (admin only)
+  app.post("/api/events", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "coach" && user.role !== "admin" && user.role !== "superadmin") {
+        return res.status(403).json({ error: "Only admins can create events" });
+      }
+
+      const event = await storage.createEvent({
+        ...req.body,
+        createdBy: user.id,
+      });
+      res.json(event);
+    } catch (error) {
+      console.error("Create event error:", error);
+      res.status(500).json({ error: "Failed to create event" });
+    }
+  });
+
+  // Update event
+  app.patch("/api/events/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "coach" && user.role !== "admin" && user.role !== "superadmin") {
+        return res.status(403).json({ error: "Only admins can update events" });
+      }
+
+      const event = await storage.updateEvent(req.params.id, req.body);
+      res.json(event);
+    } catch (error) {
+      console.error("Update event error:", error);
+      res.status(500).json({ error: "Failed to update event" });
+    }
+  });
+
+  // Delete event
+  app.delete("/api/events/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "admin" && user.role !== "superadmin") {
+        return res.status(403).json({ error: "Only admins can delete events" });
+      }
+
+      await storage.deleteEvent(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete event error:", error);
+      res.status(500).json({ error: "Failed to delete event" });
+    }
+  });
+
+  // Register for event
+  app.post("/api/events/:id/register", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const registration = await storage.registerForEvent(req.params.id, userId);
+      res.json(registration);
+    } catch (error) {
+      console.error("Register for event error:", error);
+      res.status(500).json({ error: "Failed to register for event" });
+    }
+  });
+
+  // Cancel event registration
+  app.delete("/api/events/:id/register", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      await storage.cancelEventRegistration(req.params.id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Cancel registration error:", error);
+      res.status(500).json({ error: "Failed to cancel registration" });
+    }
+  });
+
+  // Get user's event registrations
+  app.get("/api/events/my/registrations", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const registrations = await storage.getUserEventRegistrations(userId);
+      res.json(registrations);
+    } catch (error) {
+      console.error("Get user registrations error:", error);
+      res.status(500).json({ error: "Failed to get registrations" });
+    }
+  });
+
+  // ========== WEEKLY SCORECARDS ==========
+
+  // Get current week scorecard
+  app.get("/api/scorecards/current", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      // Get the start of current week (Monday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - diff);
+      const weekStart = monday.toISOString().split('T')[0];
+
+      const scorecard = await storage.getWeeklyScorecard(userId, weekStart);
+      res.json(scorecard);
+    } catch (error) {
+      console.error("Get scorecard error:", error);
+      res.status(500).json({ error: "Failed to get scorecard" });
+    }
+  });
+
+  // Get scorecard history
+  app.get("/api/scorecards/history", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const limit = parseInt(req.query.limit as string) || 12;
+      const scorecards = await storage.getUserScorecards(userId, limit);
+      res.json(scorecards);
+    } catch (error) {
+      console.error("Get scorecard history error:", error);
+      res.status(500).json({ error: "Failed to get scorecard history" });
+    }
+  });
+
+  // ========== USER MILESTONES ==========
+
+  // Get milestones
+  app.get("/api/milestones", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const milestones = await storage.getUserMilestones(userId);
+      res.json(milestones);
+    } catch (error) {
+      console.error("Get milestones error:", error);
+      res.status(500).json({ error: "Failed to get milestones" });
+    }
+  });
+
+  // ========== AI CONVERSATIONS ==========
+
+  // Start AI conversation
+  app.post("/api/ai/conversation", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { sessionType, actionType } = req.body;
+
+      const conversation = await storage.createAiConversation({
+        userId,
+        sessionType: sessionType || "chat",
+        actionType,
+      });
+      res.json(conversation);
+    } catch (error) {
+      console.error("Create conversation error:", error);
+      res.status(500).json({ error: "Failed to start conversation" });
+    }
+  });
+
+  // End AI conversation
+  app.post("/api/ai/conversation/:id/end", isAuthenticated, async (req, res) => {
+    try {
+      const { summary } = req.body;
+      const conversation = await storage.endAiConversation(req.params.id, summary);
+      res.json(conversation);
+    } catch (error) {
+      console.error("End conversation error:", error);
+      res.status(500).json({ error: "Failed to end conversation" });
+    }
+  });
+
+  // Get conversation history
+  app.get("/api/ai/conversations", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const limit = parseInt(req.query.limit as string) || 20;
+      const conversations = await storage.getUserAiConversations(userId, limit);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Get conversations error:", error);
+      res.status(500).json({ error: "Failed to get conversations" });
+    }
+  });
+
+  // Get conversation messages
+  app.get("/api/ai/conversation/:id/messages", isAuthenticated, async (req, res) => {
+    try {
+      const messages = await storage.getConversationMessages(req.params.id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Get messages error:", error);
+      res.status(500).json({ error: "Failed to get messages" });
+    }
+  });
+
+  // AI Quick Action (Regulate/Reframe/Reset)
+  app.post("/api/coach/quick-action", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { actionType, currentState } = req.body;
+
+      if (!actionType || !["regulate", "reframe", "reset"].includes(actionType)) {
+        return res.status(400).json({ error: "Valid actionType required (regulate, reframe, reset)" });
+      }
+
+      // Create conversation for this quick action
+      const conversation = await storage.createAiConversation({
+        userId,
+        sessionType: "quick_action",
+        actionType,
+      });
+
+      // Build context-aware prompt
+      const context = await storage.getCoachContext(userId);
+      const contextMessage = buildContextMessage(context);
+
+      // Get user goals for personalization
+      const goals = await storage.getUserGoals(userId);
+      const goalsContext = goals.length > 0
+        ? `User's current goals: ${goals.map(g => g.goalType).join(", ")}. `
+        : "";
+
+      const actionPrompts: Record<string, string> = {
+        regulate: `The user needs help regulating their nervous system right now. ${currentState ? `They're feeling: ${currentState}. ` : ""}${goalsContext}Provide a brief, calming response with a specific breathwork or grounding technique they can do immediately. Keep it concise and actionable.`,
+        reframe: `The user needs help reframing their perspective. ${currentState ? `Current situation: ${currentState}. ` : ""}${goalsContext}Provide a brief cognitive reframe or perspective shift. Ask a powerful question to help them see things differently. Keep it concise.`,
+        reset: `The user needs a quick mental reset to boost their energy and focus. ${currentState ? `They're feeling: ${currentState}. ` : ""}${goalsContext}Provide a brief energizing technique or micro-action they can take right now. Keep it punchy and motivating.`,
+      };
+
+      const messages: ChatMessage[] = [
+        { role: "system", content: contextMessage },
+        { role: "user", content: actionPrompts[actionType] },
+      ];
+
+      const response = await getChatResponse(messages);
+
+      // Save the message exchange
+      await storage.addAiMessage({
+        conversationId: conversation.id,
+        role: "user",
+        content: actionPrompts[actionType],
+      });
+      await storage.addAiMessage({
+        conversationId: conversation.id,
+        role: "assistant",
+        content: response,
+      });
+
+      res.json({
+        conversationId: conversation.id,
+        actionType,
+        response,
+      });
+    } catch (error) {
+      console.error("Quick action error:", error);
+      res.status(500).json({ error: "Failed to process quick action" });
+    }
+  });
+
+  // Seed default practices (run once on startup or via admin)
+  app.post("/api/admin/seed-practices", isSuperAdmin, async (req, res) => {
+    try {
+      await storage.seedDefaultPractices();
+      res.json({ success: true, message: "Default practices seeded" });
+    } catch (error) {
+      console.error("Seed practices error:", error);
+      res.status(500).json({ error: "Failed to seed practices" });
+    }
+  });
+
   return httpServer;
 }

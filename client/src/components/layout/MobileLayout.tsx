@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookHeart, Mic, Wind, User, BarChart3, Eye, Users, TreeDeciduous } from "lucide-react";
+import { Home, BookHeart, Mic, Wind, User, BarChart3, Eye, Users, TreeDeciduous, Library, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
@@ -27,18 +27,18 @@ export default function MobileLayout({ children, fullWidth = false }: MobileLayo
   const allLeftNavItems: NavItem[] = [
     { icon: Home, label: "Ground", path: "/", featureFlag: "groundCheck" },
     { icon: BookHeart, label: "Reflect", path: "/journal", featureFlag: "reflections" },
-    { icon: Wind, label: "Practice", path: "/focus", featureFlag: "groundingPractice" },
+    { icon: Library, label: "Library", path: "/library", featureFlag: "groundingPractice" },
   ];
 
   const allRightNavItemsCoach: NavItem[] = [
     { icon: Users, label: "Brothers", path: "/clients", featureFlag: "brotherhood" },
-    { icon: BarChart3, label: "Trends", path: "/stats", featureFlag: "achievements" },
+    { icon: Activity, label: "Metrics", path: "/metrics", featureFlag: "achievements" },
     { icon: User, label: "Profile", path: "/profile" }, // Always visible
   ];
 
   const allRightNavItemsClient: NavItem[] = [
     { icon: TreeDeciduous, label: "Vision", path: "/vision", featureFlag: "visionBoard" },
-    { icon: BarChart3, label: "Trends", path: "/stats", featureFlag: "achievements" },
+    { icon: Activity, label: "Metrics", path: "/metrics", featureFlag: "achievements" },
     { icon: User, label: "Profile", path: "/profile" }, // Always visible
   ];
 

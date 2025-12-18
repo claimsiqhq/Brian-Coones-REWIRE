@@ -1060,3 +1060,787 @@ export function useCompleteMicroSession() {
     },
   });
 }
+
+// ============================================
+// NEW FEATURES - Dashboard Evolution
+// ============================================
+
+// ============================================
+// Daily Metrics
+// ============================================
+
+export interface DailyMetrics {
+  id: string;
+  userId: string;
+  date: string;
+  moodScore: number | null;
+  energyScore: number | null;
+  stressScore: number | null;
+  sleepHours: number | null;
+  sleepQuality: number | null;
+  notes: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface WeeklyMetricsAverage {
+  weekStart: string;
+  avgMood: number | null;
+  avgEnergy: number | null;
+  avgStress: number | null;
+  avgSleepHours: number | null;
+  avgSleepQuality: number | null;
+}
+
+export function useTodayMetrics() {
+  return useQuery<DailyMetrics | null>({
+    queryKey: ["metrics", "today"],
+    queryFn: () => fetchJSON<DailyMetrics | null>(`${API_BASE}/metrics/today`),
+  });
+}
+
+export function useMetricsRange(startDate: string, endDate: string) {
+  return useQuery<DailyMetrics[]>({
+    queryKey: ["metrics", "range", startDate, endDate],
+    queryFn: () => fetchJSON<DailyMetrics[]>(`${API_BASE}/metrics/range?startDate=${startDate}&endDate=${endDate}`),
+    enabled: !!startDate && !!endDate,
+  });
+}
+
+export function useWeeklyMetrics() {
+  return useQuery<WeeklyMetricsAverage>({
+    queryKey: ["metrics", "weekly"],
+    queryFn: () => fetchJSON<WeeklyMetricsAverage>(`${API_BASE}/metrics/weekly`),
+  });
+}
+
+export function useSaveMetrics() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      date?: string;
+      moodScore?: number;
+      energyScore?: number;
+      stressScore?: number;
+      sleepHours?: number;
+      sleepQuality?: number;
+      notes?: string;
+    }) =>
+      fetchJSON<DailyMetrics>(`${API_BASE}/metrics`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+// ============================================
+// Daily Rituals
+// ============================================
+
+export interface DailyRitual {
+  id: string;
+  userId: string;
+  date: string;
+  ritualType: "morning" | "evening";
+  completed: boolean;
+  energyBefore: number | null;
+  energyAfter: number | null;
+  practicesCompleted: string[];
+  notes: string | null;
+  completedAt: string | null;
+  createdAt: string | null;
+}
+
+export function useTodayRituals() {
+  return useQuery<DailyRitual[]>({
+    queryKey: ["rituals", "today"],
+    queryFn: () => fetchJSON<DailyRitual[]>(`${API_BASE}/rituals/today`),
+  });
+}
+
+export function useStartRitual() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      ritualType: "morning" | "evening";
+      energyBefore?: number;
+      notes?: string;
+      practicesCompleted?: string[];
+    }) =>
+      fetchJSON<DailyRitual>(`${API_BASE}/rituals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rituals"] });
+    },
+  });
+}
+
+export function useCompleteRitual() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, energyAfter }: { id: string; energyAfter?: number }) =>
+      fetchJSON<DailyRitual>(`${API_BASE}/rituals/${id}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ energyAfter }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rituals"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+// ============================================
+// Practice Library
+// ============================================
+
+export interface Practice {
+  id: string;
+  type: "breathing" | "meditation" | "body_scan";
+  name: string;
+  subtitle: string | null;
+  description: string | null;
+  category: "energizing" | "grounding" | "sleep" | "focus" | "stress_relief";
+  durationSeconds: number;
+  durationCategory: "short" | "medium" | "long" | null;
+  iconName: string | null;
+  colorGradient: string | null;
+  phases: any;
+  audioUrl: string | null;
+  specialInstructions: string | null;
+  cycles: number | null;
+  isPremium: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface PracticeFavorite {
+  id: string;
+  userId: string;
+  practiceId: string;
+  createdAt: string | null;
+  practice: Practice;
+}
+
+export interface PracticeSession {
+  id: string;
+  userId: string;
+  practiceId: string;
+  durationSeconds: number;
+  completed: boolean;
+  moodBefore: number | null;
+  moodAfter: number | null;
+  createdAt: string | null;
+  practice: Practice;
+}
+
+export function usePractices(filters?: { type?: string; category?: string; durationCategory?: string }) {
+  const params = new URLSearchParams();
+  if (filters?.type) params.append("type", filters.type);
+  if (filters?.category) params.append("category", filters.category);
+  if (filters?.durationCategory) params.append("durationCategory", filters.durationCategory);
+
+  return useQuery<Practice[]>({
+    queryKey: ["practices", filters],
+    queryFn: () => fetchJSON<Practice[]>(`${API_BASE}/practices?${params.toString()}`),
+  });
+}
+
+export function usePractice(id: string) {
+  return useQuery<Practice>({
+    queryKey: ["practices", id],
+    queryFn: () => fetchJSON<Practice>(`${API_BASE}/practices/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useFavorites() {
+  return useQuery<PracticeFavorite[]>({
+    queryKey: ["practices", "favorites"],
+    queryFn: () => fetchJSON<PracticeFavorite[]>(`${API_BASE}/practices/favorites/list`),
+  });
+}
+
+export function useToggleFavorite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (practiceId: string) =>
+      fetchJSON<{ isFavorited: boolean }>(`${API_BASE}/practices/${practiceId}/favorite`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["practices", "favorites"] });
+    },
+  });
+}
+
+export function useLogPracticeSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      practiceId,
+      durationSeconds,
+      completed,
+      moodBefore,
+      moodAfter,
+    }: {
+      practiceId: string;
+      durationSeconds: number;
+      completed: boolean;
+      moodBefore?: number;
+      moodAfter?: number;
+    }) =>
+      fetchJSON<PracticeSession>(`${API_BASE}/practices/${practiceId}/session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ durationSeconds, completed, moodBefore, moodAfter }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["practices", "history"] });
+      queryClient.invalidateQueries({ queryKey: ["practices", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+export function usePracticeHistory(limit: number = 20) {
+  return useQuery<PracticeSession[]>({
+    queryKey: ["practices", "history", limit],
+    queryFn: () => fetchJSON<PracticeSession[]>(`${API_BASE}/practices/history/list?limit=${limit}`),
+  });
+}
+
+export function usePracticeStats() {
+  return useQuery<{ practiceId: string; count: number; totalDuration: number }[]>({
+    queryKey: ["practices", "stats"],
+    queryFn: () => fetchJSON<{ practiceId: string; count: number; totalDuration: number }[]>(`${API_BASE}/practices/stats/usage`),
+  });
+}
+
+// ============================================
+// Challenges
+// ============================================
+
+export interface Challenge {
+  id: string;
+  createdBy: string | null;
+  title: string;
+  description: string | null;
+  habitTemplate: string;
+  durationDays: number;
+  startDate: string;
+  endDate: string;
+  challengeType: "public" | "private" | "coach";
+  category: string | null;
+  goalMetric: string | null;
+  maxParticipants: number | null;
+  imageUrl: string | null;
+  isActive: boolean;
+  createdAt: string | null;
+}
+
+export interface ChallengeParticipant {
+  id: string;
+  challengeId: string;
+  userId: string;
+  currentStreak: number;
+  bestStreak: number;
+  totalCompletions: number;
+  status: "active" | "completed" | "dropped";
+  joinedAt: string | null;
+  challenge?: Challenge;
+  user?: any;
+}
+
+export interface ChallengeCheckin {
+  id: string;
+  participantId: string;
+  date: string;
+  completed: boolean;
+  energyBefore: number | null;
+  energyAfter: number | null;
+  notes: string | null;
+  createdAt: string | null;
+}
+
+export function useChallenges(filters?: { type?: string; category?: string; active?: boolean }) {
+  const params = new URLSearchParams();
+  if (filters?.type) params.append("type", filters.type);
+  if (filters?.category) params.append("category", filters.category);
+  if (filters?.active !== undefined) params.append("active", String(filters.active));
+
+  return useQuery<Challenge[]>({
+    queryKey: ["challenges", filters],
+    queryFn: () => fetchJSON<Challenge[]>(`${API_BASE}/challenges?${params.toString()}`),
+  });
+}
+
+export function useChallenge(id: string) {
+  return useQuery<Challenge>({
+    queryKey: ["challenges", id],
+    queryFn: () => fetchJSON<Challenge>(`${API_BASE}/challenges/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useMyChallenge() {
+  return useQuery<(ChallengeParticipant & { challenge: Challenge })[]>({
+    queryKey: ["challenges", "my"],
+    queryFn: () => fetchJSON<(ChallengeParticipant & { challenge: Challenge })[]>(`${API_BASE}/challenges/my/list`),
+  });
+}
+
+export function useCreateChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Challenge>) =>
+      fetchJSON<Challenge>(`${API_BASE}/challenges`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
+    },
+  });
+}
+
+export function useJoinChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (challengeId: string) =>
+      fetchJSON<ChallengeParticipant>(`${API_BASE}/challenges/${challengeId}/join`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
+    },
+  });
+}
+
+export function useLeaveChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (challengeId: string) =>
+      fetchJSON<{ success: boolean }>(`${API_BASE}/challenges/${challengeId}/leave`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
+    },
+  });
+}
+
+export function useChallengeCheckin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      challengeId,
+      participantId,
+      completed,
+      energyBefore,
+      energyAfter,
+      notes,
+    }: {
+      challengeId: string;
+      participantId: string;
+      completed: boolean;
+      energyBefore?: number;
+      energyAfter?: number;
+      notes?: string;
+    }) =>
+      fetchJSON<ChallengeCheckin>(`${API_BASE}/challenges/${challengeId}/checkin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participantId, completed, energyBefore, energyAfter, notes }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+export function useChallengeLeaderboard(challengeId: string) {
+  return useQuery<{ participant: ChallengeParticipant; user: any; rank: number }[]>({
+    queryKey: ["challenges", challengeId, "leaderboard"],
+    queryFn: () => fetchJSON<{ participant: ChallengeParticipant; user: any; rank: number }[]>(`${API_BASE}/challenges/${challengeId}/leaderboard`),
+    enabled: !!challengeId,
+  });
+}
+
+// ============================================
+// Gamification
+// ============================================
+
+export interface UserGamification {
+  id: string;
+  userId: string;
+  totalXp: number;
+  currentLevel: number;
+  xpToNextLevel: number;
+  streakMultiplier: number;
+  updatedAt: string | null;
+}
+
+export interface XpTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  source: string;
+  sourceId: string | null;
+  description: string | null;
+  createdAt: string | null;
+}
+
+export function useGamification() {
+  return useQuery<UserGamification>({
+    queryKey: ["gamification"],
+    queryFn: () => fetchJSON<UserGamification>(`${API_BASE}/gamification`),
+  });
+}
+
+export function useXpHistory(limit: number = 50) {
+  return useQuery<XpTransaction[]>({
+    queryKey: ["gamification", "xp-history", limit],
+    queryFn: () => fetchJSON<XpTransaction[]>(`${API_BASE}/gamification/xp-history?limit=${limit}`),
+  });
+}
+
+// ============================================
+// User Goals
+// ============================================
+
+export interface UserGoal {
+  id: string;
+  userId: string;
+  goalType: "stress_management" | "energy" | "focus" | "sleep" | "emotional_regulation";
+  priority: number;
+  targetDescription: string | null;
+  isActive: boolean;
+  createdAt: string | null;
+}
+
+export function useUserGoals() {
+  return useQuery<UserGoal[]>({
+    queryKey: ["goals"],
+    queryFn: () => fetchJSON<UserGoal[]>(`${API_BASE}/goals`),
+  });
+}
+
+export function useCreateGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { goalType: string; priority?: number; targetDescription?: string }) =>
+      fetchJSON<UserGoal>(`${API_BASE}/goals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
+}
+
+export function useUpdateGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string; priority?: number; targetDescription?: string }) =>
+      fetchJSON<UserGoal>(`${API_BASE}/goals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
+}
+
+export function useDeleteGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJSON<{ success: boolean }>(`${API_BASE}/goals/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
+}
+
+// ============================================
+// Events
+// ============================================
+
+export interface Event {
+  id: string;
+  createdBy: string | null;
+  title: string;
+  description: string | null;
+  eventType: "retreat" | "webinar" | "masterclass" | "workshop" | "group_session";
+  startTime: string;
+  endTime: string | null;
+  timezone: string;
+  locationType: "virtual" | "in_person" | "hybrid";
+  locationDetails: string | null;
+  maxParticipants: number | null;
+  priceCents: number;
+  vipPriceCents: number | null;
+  vipEarlyAccessHours: number;
+  imageUrl: string | null;
+  recordingUrl: string | null;
+  isPublished: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface EventRegistration {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: "registered" | "attended" | "cancelled" | "no_show";
+  paymentStatus: string | null;
+  paymentAmountCents: number | null;
+  calendarEventId: string | null;
+  reminderSent: boolean;
+  registeredAt: string | null;
+  event?: Event;
+  user?: any;
+}
+
+export function useEvents(filters?: { type?: string; upcoming?: boolean }) {
+  const params = new URLSearchParams();
+  if (filters?.type) params.append("type", filters.type);
+  if (filters?.upcoming) params.append("upcoming", "true");
+
+  return useQuery<Event[]>({
+    queryKey: ["events", filters],
+    queryFn: () => fetchJSON<Event[]>(`${API_BASE}/events?${params.toString()}`),
+  });
+}
+
+export function useEvent(id: string) {
+  return useQuery<Event>({
+    queryKey: ["events", id],
+    queryFn: () => fetchJSON<Event>(`${API_BASE}/events/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useMyEventRegistrations() {
+  return useQuery<(EventRegistration & { event: Event })[]>({
+    queryKey: ["events", "my-registrations"],
+    queryFn: () => fetchJSON<(EventRegistration & { event: Event })[]>(`${API_BASE}/events/my/registrations`),
+  });
+}
+
+export function useCreateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Event>) =>
+      fetchJSON<Event>(`${API_BASE}/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: Partial<Event> & { id: string }) =>
+      fetchJSON<Event>(`${API_BASE}/events/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+export function useRegisterForEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (eventId: string) =>
+      fetchJSON<EventRegistration>(`${API_BASE}/events/${eventId}/register`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+export function useCancelEventRegistration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (eventId: string) =>
+      fetchJSON<{ success: boolean }>(`${API_BASE}/events/${eventId}/register`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+// ============================================
+// Weekly Scorecards
+// ============================================
+
+export interface WeeklyScorecard {
+  id: string;
+  userId: string;
+  weekStart: string;
+  avgMood: number | null;
+  avgEnergy: number | null;
+  avgStress: number | null;
+  avgSleepHours: number | null;
+  avgSleepQuality: number | null;
+  totalHabitsCompleted: number;
+  totalPracticesCompleted: number;
+  totalJournalEntries: number;
+  highlights: any[];
+  insights: any[];
+  createdAt: string | null;
+}
+
+export function useCurrentScorecard() {
+  return useQuery<WeeklyScorecard | null>({
+    queryKey: ["scorecards", "current"],
+    queryFn: () => fetchJSON<WeeklyScorecard | null>(`${API_BASE}/scorecards/current`),
+  });
+}
+
+export function useScorecardHistory(limit: number = 12) {
+  return useQuery<WeeklyScorecard[]>({
+    queryKey: ["scorecards", "history", limit],
+    queryFn: () => fetchJSON<WeeklyScorecard[]>(`${API_BASE}/scorecards/history?limit=${limit}`),
+  });
+}
+
+// ============================================
+// User Milestones
+// ============================================
+
+export interface UserMilestone {
+  id: string;
+  userId: string;
+  milestoneType: string;
+  title: string;
+  description: string | null;
+  metricValue: number | null;
+  achievedAt: string | null;
+}
+
+export function useMilestones() {
+  return useQuery<UserMilestone[]>({
+    queryKey: ["milestones"],
+    queryFn: () => fetchJSON<UserMilestone[]>(`${API_BASE}/milestones`),
+  });
+}
+
+// ============================================
+// AI Conversations
+// ============================================
+
+export interface AiConversation {
+  id: string;
+  userId: string;
+  sessionType: "micro_session" | "chat" | "voice" | "quick_action";
+  actionType: "regulate" | "reframe" | "reset" | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  messagesCount: number;
+  summary: string | null;
+}
+
+export interface AiMessage {
+  id: string;
+  conversationId: string;
+  role: "user" | "assistant";
+  content: string;
+  suggestedAction: any;
+  createdAt: string | null;
+}
+
+export function useAiConversations(limit: number = 20) {
+  return useQuery<AiConversation[]>({
+    queryKey: ["ai", "conversations", limit],
+    queryFn: () => fetchJSON<AiConversation[]>(`${API_BASE}/ai/conversations?limit=${limit}`),
+  });
+}
+
+export function useConversationMessages(conversationId: string) {
+  return useQuery<AiMessage[]>({
+    queryKey: ["ai", "conversation", conversationId, "messages"],
+    queryFn: () => fetchJSON<AiMessage[]>(`${API_BASE}/ai/conversation/${conversationId}/messages`),
+    enabled: !!conversationId,
+  });
+}
+
+export function useStartConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sessionType?: string; actionType?: string }) =>
+      fetchJSON<AiConversation>(`${API_BASE}/ai/conversation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai", "conversations"] });
+    },
+  });
+}
+
+export function useEndConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, summary }: { id: string; summary?: string }) =>
+      fetchJSON<AiConversation>(`${API_BASE}/ai/conversation/${id}/end`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summary }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai", "conversations"] });
+    },
+  });
+}
+
+// AI Quick Actions (Regulate/Reframe/Reset)
+export function useQuickAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { actionType: "regulate" | "reframe" | "reset"; currentState?: string }) =>
+      fetchJSON<{ conversationId: string; actionType: string; response: string }>(`${API_BASE}/coach/quick-action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai", "conversations"] });
+    },
+  });
+}

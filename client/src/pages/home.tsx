@@ -5,14 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Smile, Frown, Meh, Sun, Cloud, ChevronRight, AlertCircle, CheckCircle2, Circle, Flame, BookHeart, Target, TrendingUp, Trophy, Quote, Mic, Sparkles, Calendar, Clock, Video } from "lucide-react";
+import { Smile, Frown, Meh, Sun, Cloud, ChevronRight, AlertCircle, CheckCircle2, Circle, Flame, BookHeart, Target, TrendingUp, Trophy, Quote, Mic, Sparkles, Calendar, Clock, Video, Sunrise, Moon, Zap, Heart, RefreshCw, Award, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import bgImage from "@assets/generated_images/calming_abstract_mobile_background.png";
-import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useCreateVentMessage, useMoodTrends, useHabitStats, useCreateHabit, useAchievements, useDashboardStats, useDailyQuote, useTodayMicroSession, useUpcomingSessions } from "@/lib/api";
+import { useHabits, useHabitCompletions, useToggleHabit, useTodayMood, useCreateMood, useCreateVentMessage, useMoodTrends, useHabitStats, useCreateHabit, useAchievements, useDashboardStats, useDailyQuote, useTodayMicroSession, useUpcomingSessions, useTodayRituals, useGamification, useQuickAction, useMyChallenge } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -51,9 +51,25 @@ export default function Home() {
   const { data: dashboardStats } = useDashboardStats();
   const { data: dailyQuote } = useDailyQuote();
   const { data: microSessionData } = useTodayMicroSession();
-  
+  const { data: todayRituals = [] } = useTodayRituals();
+  const { data: gamification } = useGamification();
+  const { data: myChallenges = [] } = useMyChallenge();
+
   const isClient = !!user && user.role !== "coach" && user.role !== "admin";
   const { data: upcomingSessions = [] } = useUpcomingSessions({ enabled: isClient });
+
+  // Quick action state
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [quickActionResponse, setQuickActionResponse] = useState<string | null>(null);
+  const [quickActionLoading, setQuickActionLoading] = useState(false);
+  const quickActionMutation = useQuickAction();
+
+  // Get ritual status
+  const morningRitual = todayRituals.find(r => r.ritualType === "morning");
+  const eveningRitual = todayRituals.find(r => r.ritualType === "evening");
+  const currentHour = new Date().getHours();
+  const showMorningRitual = currentHour < 12;
+  const showEveningRitual = currentHour >= 17;
   
   const toggleHabitMutation = useToggleHabit();
   const createMoodMutation = useCreateMood();
@@ -193,6 +209,23 @@ export default function Home() {
     return "Good Evening";
   };
 
+  const handleQuickAction = async (actionType: "regulate" | "reframe" | "reset") => {
+    setQuickActionLoading(true);
+    setShowQuickAction(true);
+    try {
+      const result = await quickActionMutation.mutateAsync({ actionType });
+      setQuickActionResponse(result.response);
+    } catch (error) {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setQuickActionLoading(false);
+    }
+  };
+
   const getMoodDisplay = (mood: string) => {
     const moodMap: Record<string, { icon: typeof Frown; color: string; bg: string }> = {
       "Rough": { icon: Frown, color: "text-rose-500", bg: "bg-rose-100" },
@@ -224,6 +257,13 @@ export default function Home() {
               <h1 className="text-2xl font-display font-bold text-birch leading-tight drop-shadow-sm">{greeting()},<br/>{displayName}</h1>
             </div>
             <div className="flex gap-3 items-center">
+              {/* Level Badge */}
+              {gamification && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-birch/20 rounded-full backdrop-blur-sm border border-birch/30">
+                  <Award className="w-4 h-4 text-birch" />
+                  <span className="text-xs font-bold text-birch">Lv.{gamification.currentLevel}</span>
+                </div>
+              )}
               {showRelease && (
                 <Button
                   variant="ghost"
@@ -289,6 +329,114 @@ export default function Home() {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Quick Actions - Regulate/Reframe/Reset */}
+          {showCoachBrian && (
+            <div className="shrink-0 grid grid-cols-3 gap-2">
+              <button
+                onClick={() => handleQuickAction("regulate")}
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-sage/20 to-deep-pine rounded-xl border border-sage/30 hover:border-sage/50 transition-all"
+              >
+                <Heart className="w-6 h-6 text-sage mb-1" />
+                <span className="text-[10px] font-semibold text-sage">Regulate</span>
+              </button>
+              <button
+                onClick={() => handleQuickAction("reframe")}
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-birch/20 to-deep-pine rounded-xl border border-birch/30 hover:border-birch/50 transition-all"
+              >
+                <RefreshCw className="w-6 h-6 text-birch mb-1" />
+                <span className="text-[10px] font-semibold text-birch">Reframe</span>
+              </button>
+              <button
+                onClick={() => handleQuickAction("reset")}
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-amber-500/20 to-deep-pine rounded-xl border border-amber-500/30 hover:border-amber-500/50 transition-all"
+              >
+                <Zap className="w-6 h-6 text-amber-400 mb-1" />
+                <span className="text-[10px] font-semibold text-amber-400">Reset</span>
+              </button>
+            </div>
+          )}
+
+          {/* Morning/Evening Ritual Card */}
+          {(showMorningRitual || showEveningRitual) && (
+            <Link href="/focus" className="shrink-0">
+              <Card className={`border-none shadow-lg overflow-hidden ${
+                (showMorningRitual && morningRitual?.completed) || (showEveningRitual && eveningRitual?.completed)
+                  ? 'bg-gradient-to-br from-sage/20 via-forest-floor/10 to-deep-pine'
+                  : 'bg-gradient-to-br from-amber-500/10 via-deep-pine to-deep-pine'
+              }`}>
+                <CardContent className="p-4 relative">
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-bl from-sage/10 to-transparent rounded-full pointer-events-none" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md ${
+                        (showMorningRitual && morningRitual?.completed) || (showEveningRitual && eveningRitual?.completed)
+                          ? 'bg-gradient-to-br from-sage to-forest-floor'
+                          : 'bg-gradient-to-br from-amber-500 to-amber-600'
+                      }`}>
+                        {showMorningRitual ? (
+                          morningRitual?.completed ? <CheckCircle2 className="w-6 h-6 text-night-forest" /> : <Sunrise className="w-6 h-6 text-night-forest" />
+                        ) : (
+                          eveningRitual?.completed ? <CheckCircle2 className="w-6 h-6 text-night-forest" /> : <Moon className="w-6 h-6 text-night-forest" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className={`font-semibold text-sm ${
+                          (showMorningRitual && morningRitual?.completed) || (showEveningRitual && eveningRitual?.completed)
+                            ? 'text-sage' : 'text-birch'
+                        }`}>
+                          {showMorningRitual
+                            ? (morningRitual?.completed ? 'Morning Ritual Complete' : 'Morning Ritual')
+                            : (eveningRitual?.completed ? 'Evening Ritual Complete' : 'Evening Ritual')
+                          }
+                        </h3>
+                        <p className={`text-xs ${
+                          (showMorningRitual && morningRitual?.completed) || (showEveningRitual && eveningRitual?.completed)
+                            ? 'text-sage/70' : 'text-birch/70'
+                        }`}>
+                          {showMorningRitual
+                            ? (morningRitual?.completed ? 'Start your day grounded' : 'Set your intention for today')
+                            : (eveningRitual?.completed ? 'Ready for rest' : 'Reflect and release the day')
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-5 h-5 ${
+                      (showMorningRitual && morningRitual?.completed) || (showEveningRitual && eveningRitual?.completed)
+                        ? 'text-sage' : 'text-birch'
+                    }`} />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
+          {/* Active Challenge Card */}
+          {myChallenges.length > 0 && myChallenges[0].challenge && (
+            <Link href="/challenges" className="shrink-0">
+              <Card className="border-none shadow-lg bg-gradient-to-br from-deep-pine via-forest-floor/20 to-deep-pine overflow-hidden">
+                <CardContent className="p-4 relative">
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-bl from-birch/10 to-transparent rounded-full pointer-events-none" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-birch to-birch/70 flex items-center justify-center shadow-md">
+                        <Users className="w-6 h-6 text-night-forest" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold text-sage mb-0.5">Active Challenge</p>
+                        <h3 className="font-semibold text-sm text-birch line-clamp-1">{myChallenges[0].challenge.title}</h3>
+                        <p className="text-xs text-sage/70 flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-birch" />
+                          {myChallenges[0].currentStreak} day streak · {myChallenges[0].totalCompletions} completed
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-sage" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           )}
 
           {/* 5-Minute Daily Ground Check Card */}
@@ -582,7 +730,7 @@ export default function Home() {
                 value=""
                 onValueChange={(value) => setNewHabitLabel(value)}
               >
-                <SelectTrigger 
+                <SelectTrigger
                   id="suggested-habit"
                   className="bg-night-forest border-forest-floor text-birch focus:ring-sage/30"
                   data-testid="select-suggested-habit"
@@ -605,18 +753,18 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="relative flex items-center py-2">
               <div className="flex-grow border-t border-forest-floor/50"></div>
               <span className="mx-3 text-xs text-sage/60">or</span>
               <div className="flex-grow border-t border-forest-floor/50"></div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="custom-habit" className="text-sm font-medium text-birch">Create Your Own</Label>
-              <Input 
+              <Input
                 id="custom-habit"
-                placeholder="Type your own anchor..." 
+                placeholder="Type your own anchor..."
                 className="bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 focus-visible:ring-sage/30"
                 value={newHabitLabel}
                 onChange={(e) => setNewHabitLabel(e.target.value)}
@@ -630,25 +778,69 @@ export default function Home() {
             </div>
           </div>
           <DialogFooter className="flex-row gap-2 sm:justify-end">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => {
                 setShowAddHabit(false);
                 setNewHabitLabel("");
-              }} 
-              className="flex-1 text-sage hover:bg-forest-floor/30 hover:text-birch" 
+              }}
+              className="flex-1 text-sage hover:bg-forest-floor/30 hover:text-birch"
               data-testid="button-cancel-habit"
             >
               Cancel
             </Button>
-            <Button 
-              className="flex-1 bg-birch hover:bg-birch/80 text-night-forest shadow-md border-none" 
+            <Button
+              className="flex-1 bg-birch hover:bg-birch/80 text-night-forest shadow-md border-none"
               onClick={handleAddHabit}
               disabled={!newHabitLabel.trim() || createHabitMutation.isPending}
               data-testid="button-save-habit"
             >
               {createHabitMutation.isPending ? "Adding..." : "Add Anchor"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Action Response Modal */}
+      <Dialog open={showQuickAction} onOpenChange={(open) => {
+        setShowQuickAction(open);
+        if (!open) setQuickActionResponse(null);
+      }}>
+        <DialogContent className="sm:max-w-[425px] w-[90%] rounded-2xl border-none bg-deep-pine">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-birch flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-sage" />
+              Coach Response
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {quickActionLoading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-10 h-10 border-3 border-sage/30 border-t-sage rounded-full animate-spin mb-3" />
+                <p className="text-sm text-sage/70">Thinking...</p>
+              </div>
+            ) : (
+              <div className="bg-night-forest/50 rounded-xl p-4 border border-forest-floor/30">
+                <p className="text-sm text-birch/90 leading-relaxed whitespace-pre-wrap">{quickActionResponse}</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowQuickAction(false);
+                setQuickActionResponse(null);
+              }}
+              className="flex-1 text-sage hover:bg-forest-floor/30 hover:text-birch"
+            >
+              Close
+            </Button>
+            <Link href="/voice" className="flex-1">
+              <Button className="w-full bg-birch hover:bg-birch/80 text-night-forest shadow-md border-none">
+                Talk to Coach
+              </Button>
+            </Link>
           </DialogFooter>
         </DialogContent>
       </Dialog>

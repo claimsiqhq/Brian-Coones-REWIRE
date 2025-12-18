@@ -25,6 +25,24 @@ import {
   coachNotifications,
   appProfiles,
   userProfileAssignments,
+  // New feature tables
+  dailyMetrics,
+  dailyRituals,
+  practices,
+  practiceFavorites,
+  practiceSessions,
+  challenges,
+  challengeParticipants,
+  challengeCheckins,
+  userGamification,
+  xpTransactions,
+  userGoals,
+  events,
+  eventRegistrations,
+  weeklyScorecards,
+  userMilestones,
+  aiConversations,
+  aiMessages,
   type User,
   type UpsertUser,
   type Mood,
@@ -76,6 +94,44 @@ import {
   type UpdateAppProfile,
   type UserProfileAssignment,
   type InsertUserProfileAssignment,
+  // New feature types
+  type DailyMetrics,
+  type InsertDailyMetrics,
+  type UpdateDailyMetrics,
+  type DailyRitual,
+  type InsertDailyRitual,
+  type Practice,
+  type InsertPractice,
+  type UpdatePractice,
+  type PracticeFavorite,
+  type InsertPracticeFavorite,
+  type PracticeSession,
+  type InsertPracticeSession,
+  type Challenge,
+  type InsertChallenge,
+  type ChallengeParticipant,
+  type InsertChallengeParticipant,
+  type ChallengeCheckin,
+  type InsertChallengeCheckin,
+  type UserGamification,
+  type InsertUserGamification,
+  type XpTransaction,
+  type InsertXpTransaction,
+  type UserGoal,
+  type InsertUserGoal,
+  type Event,
+  type InsertEvent,
+  type UpdateEvent,
+  type EventRegistration,
+  type InsertEventRegistration,
+  type WeeklyScorecard,
+  type InsertWeeklyScorecard,
+  type UserMilestone,
+  type InsertUserMilestone,
+  type AiConversation,
+  type InsertAiConversation,
+  type AiMessage,
+  type InsertAiMessage,
 } from "@shared/schema";
 
 const PostgresSessionStore = connectPg(session);
@@ -238,6 +294,92 @@ export interface IStorage {
   // Super Admin
   getAllUsers(): Promise<User[]>;
   updateUserRole(userId: string, role: string): Promise<User>;
+
+  // ========== NEW FEATURE METHODS ==========
+
+  // Daily Metrics
+  getTodayMetrics(userId: string): Promise<DailyMetrics | null>;
+  getMetricsByDateRange(userId: string, startDate: string, endDate: string): Promise<DailyMetrics[]>;
+  createOrUpdateDailyMetrics(userId: string, date: string, data: UpdateDailyMetrics): Promise<DailyMetrics>;
+  getWeeklyMetricsAverage(userId: string, weekStart: string): Promise<{
+    avgMood: number | null;
+    avgEnergy: number | null;
+    avgStress: number | null;
+    avgSleepHours: number | null;
+    avgSleepQuality: number | null;
+  }>;
+
+  // Daily Rituals
+  getTodayRituals(userId: string): Promise<DailyRitual[]>;
+  getRitualByTypeAndDate(userId: string, date: string, ritualType: string): Promise<DailyRitual | null>;
+  createOrUpdateRitual(data: InsertDailyRitual): Promise<DailyRitual>;
+  completeRitual(id: string, energyAfter?: number): Promise<DailyRitual>;
+
+  // Practice Library
+  getAllPractices(filters?: { type?: string; category?: string; durationCategory?: string }): Promise<Practice[]>;
+  getPractice(id: string): Promise<Practice | null>;
+  createPractice(data: InsertPractice): Promise<Practice>;
+  updatePractice(id: string, data: UpdatePractice): Promise<Practice>;
+  deletePractice(id: string): Promise<void>;
+  seedDefaultPractices(): Promise<void>;
+
+  // Practice Favorites & Sessions
+  getUserFavorites(userId: string): Promise<(PracticeFavorite & { practice: Practice })[]>;
+  toggleFavorite(userId: string, practiceId: string): Promise<boolean>;
+  createPracticeSession(data: InsertPracticeSession): Promise<PracticeSession>;
+  getUserPracticeSessions(userId: string, limit?: number): Promise<(PracticeSession & { practice: Practice })[]>;
+  getPracticeUsageStats(userId: string): Promise<{ practiceId: string; count: number; totalDuration: number }[]>;
+
+  // Challenges
+  getChallenges(filters?: { type?: string; category?: string; active?: boolean }): Promise<Challenge[]>;
+  getChallenge(id: string): Promise<Challenge | null>;
+  createChallenge(data: InsertChallenge): Promise<Challenge>;
+  joinChallenge(challengeId: string, userId: string): Promise<ChallengeParticipant>;
+  leaveChallenge(challengeId: string, userId: string): Promise<void>;
+  getChallengeParticipants(challengeId: string): Promise<(ChallengeParticipant & { user: User })[]>;
+  getUserChallenges(userId: string): Promise<(ChallengeParticipant & { challenge: Challenge })[]>;
+  createChallengeCheckin(data: InsertChallengeCheckin): Promise<ChallengeCheckin>;
+  getChallengeLeaderboard(challengeId: string): Promise<{ participant: ChallengeParticipant; user: User; rank: number }[]>;
+
+  // Gamification
+  getUserGamification(userId: string): Promise<UserGamification>;
+  awardXp(userId: string, amount: number, source: string, sourceId?: string, description?: string): Promise<{ xp: XpTransaction; gamification: UserGamification }>;
+  getXpHistory(userId: string, limit?: number): Promise<XpTransaction[]>;
+  calculateLevel(totalXp: number): { level: number; xpToNextLevel: number };
+
+  // User Goals
+  getUserGoals(userId: string): Promise<UserGoal[]>;
+  createUserGoal(data: InsertUserGoal): Promise<UserGoal>;
+  updateUserGoal(id: string, data: Partial<InsertUserGoal>): Promise<UserGoal>;
+  deleteUserGoal(id: string): Promise<void>;
+
+  // Events
+  getEvents(filters?: { type?: string; upcoming?: boolean; published?: boolean }): Promise<Event[]>;
+  getEvent(id: string): Promise<Event | null>;
+  createEvent(data: InsertEvent): Promise<Event>;
+  updateEvent(id: string, data: UpdateEvent): Promise<Event>;
+  deleteEvent(id: string): Promise<void>;
+  registerForEvent(eventId: string, userId: string): Promise<EventRegistration>;
+  cancelEventRegistration(eventId: string, userId: string): Promise<void>;
+  getUserEventRegistrations(userId: string): Promise<(EventRegistration & { event: Event })[]>;
+  getEventRegistrations(eventId: string): Promise<(EventRegistration & { user: User })[]>;
+
+  // Weekly Scorecards
+  getWeeklyScorecard(userId: string, weekStart: string): Promise<WeeklyScorecard | null>;
+  createOrUpdateWeeklyScorecard(data: InsertWeeklyScorecard): Promise<WeeklyScorecard>;
+  getUserScorecards(userId: string, limit?: number): Promise<WeeklyScorecard[]>;
+
+  // User Milestones
+  getUserMilestones(userId: string): Promise<UserMilestone[]>;
+  createMilestone(data: InsertUserMilestone): Promise<UserMilestone>;
+
+  // AI Conversations
+  createAiConversation(data: InsertAiConversation): Promise<AiConversation>;
+  getAiConversation(id: string): Promise<AiConversation | null>;
+  endAiConversation(id: string, summary?: string): Promise<AiConversation>;
+  getUserAiConversations(userId: string, limit?: number): Promise<AiConversation[]>;
+  addAiMessage(data: InsertAiMessage): Promise<AiMessage>;
+  getConversationMessages(conversationId: string): Promise<AiMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1460,6 +1602,727 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return result;
+  }
+
+  // ========== DAILY METRICS ==========
+
+  async getTodayMetrics(userId: string): Promise<DailyMetrics | null> {
+    const today = new Date().toISOString().split('T')[0];
+    const [result] = await db.select().from(dailyMetrics)
+      .where(and(eq(dailyMetrics.userId, userId), eq(dailyMetrics.date, today)))
+      .limit(1);
+    return result || null;
+  }
+
+  async getMetricsByDateRange(userId: string, startDate: string, endDate: string): Promise<DailyMetrics[]> {
+    return db.select().from(dailyMetrics)
+      .where(and(
+        eq(dailyMetrics.userId, userId),
+        gte(dailyMetrics.date, startDate),
+        sql`${dailyMetrics.date} <= ${endDate}`
+      ))
+      .orderBy(desc(dailyMetrics.date));
+  }
+
+  async createOrUpdateDailyMetrics(userId: string, date: string, data: UpdateDailyMetrics): Promise<DailyMetrics> {
+    const existing = await db.select().from(dailyMetrics)
+      .where(and(eq(dailyMetrics.userId, userId), eq(dailyMetrics.date, date)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [result] = await db.update(dailyMetrics)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(dailyMetrics.id, existing[0].id))
+        .returning();
+      return result;
+    }
+
+    const [result] = await db.insert(dailyMetrics)
+      .values({ userId, date, ...data })
+      .returning();
+    return result;
+  }
+
+  async getWeeklyMetricsAverage(userId: string, weekStart: string): Promise<{
+    avgMood: number | null;
+    avgEnergy: number | null;
+    avgStress: number | null;
+    avgSleepHours: number | null;
+    avgSleepQuality: number | null;
+  }> {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    const endDate = weekEnd.toISOString().split('T')[0];
+
+    const metrics = await this.getMetricsByDateRange(userId, weekStart, endDate);
+
+    if (metrics.length === 0) {
+      return { avgMood: null, avgEnergy: null, avgStress: null, avgSleepHours: null, avgSleepQuality: null };
+    }
+
+    const sum = (arr: (number | null)[]) => arr.filter(n => n !== null).reduce((a, b) => a! + b!, 0);
+    const count = (arr: (number | null)[]) => arr.filter(n => n !== null).length;
+    const avg = (arr: (number | null)[]) => count(arr) > 0 ? sum(arr)! / count(arr) : null;
+
+    return {
+      avgMood: avg(metrics.map(m => m.moodScore)),
+      avgEnergy: avg(metrics.map(m => m.energyScore)),
+      avgStress: avg(metrics.map(m => m.stressScore)),
+      avgSleepHours: avg(metrics.map(m => m.sleepHours)),
+      avgSleepQuality: avg(metrics.map(m => m.sleepQuality)),
+    };
+  }
+
+  // ========== DAILY RITUALS ==========
+
+  async getTodayRituals(userId: string): Promise<DailyRitual[]> {
+    const today = new Date().toISOString().split('T')[0];
+    return db.select().from(dailyRituals)
+      .where(and(eq(dailyRituals.userId, userId), eq(dailyRituals.date, today)));
+  }
+
+  async getRitualByTypeAndDate(userId: string, date: string, ritualType: string): Promise<DailyRitual | null> {
+    const [result] = await db.select().from(dailyRituals)
+      .where(and(
+        eq(dailyRituals.userId, userId),
+        eq(dailyRituals.date, date),
+        eq(dailyRituals.ritualType, ritualType)
+      ))
+      .limit(1);
+    return result || null;
+  }
+
+  async createOrUpdateRitual(data: InsertDailyRitual): Promise<DailyRitual> {
+    const existing = await this.getRitualByTypeAndDate(data.userId, data.date, data.ritualType);
+
+    if (existing) {
+      const [result] = await db.update(dailyRituals)
+        .set(data)
+        .where(eq(dailyRituals.id, existing.id))
+        .returning();
+      return result;
+    }
+
+    const [result] = await db.insert(dailyRituals).values(data).returning();
+    return result;
+  }
+
+  async completeRitual(id: string, energyAfter?: number): Promise<DailyRitual> {
+    const [result] = await db.update(dailyRituals)
+      .set({ completed: true, completedAt: new Date(), energyAfter })
+      .where(eq(dailyRituals.id, id))
+      .returning();
+    return result;
+  }
+
+  // ========== PRACTICE LIBRARY ==========
+
+  async getAllPractices(filters?: { type?: string; category?: string; durationCategory?: string }): Promise<Practice[]> {
+    let query = db.select().from(practices).where(eq(practices.isActive, true));
+
+    // Note: filters would need to be applied with additional where clauses
+    // For now, fetch all and filter in memory for simplicity
+    const results = await query.orderBy(practices.sortOrder);
+
+    if (!filters) return results;
+
+    return results.filter(p => {
+      if (filters.type && p.type !== filters.type) return false;
+      if (filters.category && p.category !== filters.category) return false;
+      if (filters.durationCategory && p.durationCategory !== filters.durationCategory) return false;
+      return true;
+    });
+  }
+
+  async getPractice(id: string): Promise<Practice | null> {
+    const [result] = await db.select().from(practices).where(eq(practices.id, id)).limit(1);
+    return result || null;
+  }
+
+  async createPractice(data: InsertPractice): Promise<Practice> {
+    const [result] = await db.insert(practices).values(data).returning();
+    return result;
+  }
+
+  async updatePractice(id: string, data: UpdatePractice): Promise<Practice> {
+    const [result] = await db.update(practices)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(practices.id, id))
+      .returning();
+    return result;
+  }
+
+  async deletePractice(id: string): Promise<void> {
+    await db.update(practices).set({ isActive: false }).where(eq(practices.id, id));
+  }
+
+  async seedDefaultPractices(): Promise<void> {
+    const existing = await db.select().from(practices).limit(1);
+    if (existing.length > 0) return;
+
+    const defaultPractices: InsertPractice[] = [
+      {
+        type: "breathing",
+        name: "4-7-8 Relaxing",
+        subtitle: "Classic calm technique",
+        description: "Inhale 4s, hold 7s, exhale 8s. Perfect for reducing anxiety and preparing for sleep.",
+        category: "sleep",
+        durationSeconds: 228, // ~4 cycles
+        durationCategory: "short",
+        iconName: "Moon",
+        colorGradient: "from-forest-floor to-deep-pine",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 4000, label: "Inhale" },
+          { phase: "hold", duration: 7000, label: "Hold" },
+          { phase: "exhale", duration: 8000, label: "Exhale" },
+        ]),
+        sortOrder: 1,
+      },
+      {
+        type: "breathing",
+        name: "Box Breathing",
+        subtitle: "Navy SEAL technique",
+        description: "Equal 4-second intervals for inhale, hold, exhale, hold. Used by elite performers for focus.",
+        category: "focus",
+        durationSeconds: 192, // ~3 cycles
+        durationCategory: "short",
+        iconName: "Brain",
+        colorGradient: "from-sage to-forest-floor",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 4000, label: "Inhale" },
+          { phase: "hold", duration: 4000, label: "Hold" },
+          { phase: "exhale", duration: 4000, label: "Exhale" },
+          { phase: "holdEmpty", duration: 4000, label: "Hold" },
+        ]),
+        sortOrder: 2,
+      },
+      {
+        type: "breathing",
+        name: "Resonant Breathing",
+        subtitle: "Heart coherence",
+        description: "5-second inhales and exhales at ~6 breaths per minute. Optimizes heart rate variability.",
+        category: "grounding",
+        durationSeconds: 300, // 5 min
+        durationCategory: "short",
+        iconName: "Heart",
+        colorGradient: "from-birch/80 to-sage",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 5000, label: "Inhale" },
+          { phase: "exhale", duration: 5000, label: "Exhale" },
+        ]),
+        sortOrder: 3,
+      },
+      {
+        type: "breathing",
+        name: "Fire Breath",
+        subtitle: "Bhastrika / Bellows",
+        description: "Quick, powerful breaths to boost energy and alertness. Stokes your inner fire.",
+        category: "energizing",
+        durationSeconds: 60,
+        durationCategory: "short",
+        iconName: "Zap",
+        colorGradient: "from-birch to-forest-floor",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 1000, label: "In" },
+          { phase: "exhale", duration: 1000, label: "Out" },
+        ]),
+        cycles: 15,
+        specialInstructions: "Breathe rapidly through your nose",
+        sortOrder: 4,
+      },
+      {
+        type: "breathing",
+        name: "2-4 Relaxing",
+        subtitle: "Extended exhale",
+        description: "Short inhale, long exhale activates your parasympathetic nervous system for deep relaxation.",
+        category: "stress_relief",
+        durationSeconds: 180,
+        durationCategory: "short",
+        iconName: "Leaf",
+        colorGradient: "from-sage/80 to-deep-pine",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 2000, label: "Inhale" },
+          { phase: "exhale", duration: 4000, label: "Exhale" },
+        ]),
+        sortOrder: 5,
+      },
+      {
+        type: "breathing",
+        name: "Deep Belly",
+        subtitle: "Diaphragmatic breathing",
+        description: "Slow, deep breaths into your belly. The foundation of grounding work.",
+        category: "grounding",
+        durationSeconds: 300,
+        durationCategory: "short",
+        iconName: "Wind",
+        colorGradient: "from-forest-floor to-sage/50",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 4000, label: "Breathe In" },
+          { phase: "hold", duration: 1000, label: "Pause" },
+          { phase: "exhale", duration: 6000, label: "Breathe Out" },
+        ]),
+        specialInstructions: "Place hand on belly, feel it rise and fall",
+        sortOrder: 6,
+      },
+      {
+        type: "breathing",
+        name: "Wim Hof Method",
+        subtitle: "Cold warrior breathing",
+        description: "30 deep breaths followed by breath retention. Increases energy, focus, and stress resilience.",
+        category: "energizing",
+        durationSeconds: 180,
+        durationCategory: "short",
+        iconName: "Flame",
+        colorGradient: "from-birch/70 to-deep-pine",
+        phases: JSON.stringify([
+          { phase: "inhale", duration: 1500, label: "Deep In" },
+          { phase: "exhale", duration: 1500, label: "Let Go" },
+        ]),
+        cycles: 30,
+        specialInstructions: "After 30 breaths, exhale and hold as long as comfortable",
+        sortOrder: 7,
+      },
+      {
+        type: "body_scan",
+        name: "5-Minute Body Scan",
+        subtitle: "Quick grounding",
+        description: "A brief journey through your body to release tension and increase awareness.",
+        category: "grounding",
+        durationSeconds: 300,
+        durationCategory: "short",
+        iconName: "User",
+        colorGradient: "from-sage to-forest-floor",
+        sortOrder: 10,
+      },
+      {
+        type: "body_scan",
+        name: "Deep Body Scan",
+        subtitle: "Full relaxation",
+        description: "A thorough, peaceful journey through every part of your body.",
+        category: "sleep",
+        durationSeconds: 900,
+        durationCategory: "medium",
+        iconName: "Moon",
+        colorGradient: "from-deep-pine to-night-forest",
+        sortOrder: 11,
+      },
+    ];
+
+    await db.insert(practices).values(defaultPractices);
+  }
+
+  // ========== PRACTICE FAVORITES & SESSIONS ==========
+
+  async getUserFavorites(userId: string): Promise<(PracticeFavorite & { practice: Practice })[]> {
+    const favorites = await db.select().from(practiceFavorites)
+      .where(eq(practiceFavorites.userId, userId));
+
+    const results = await Promise.all(favorites.map(async (fav) => {
+      const practice = await this.getPractice(fav.practiceId);
+      return { ...fav, practice: practice! };
+    }));
+
+    return results.filter(r => r.practice !== null);
+  }
+
+  async toggleFavorite(userId: string, practiceId: string): Promise<boolean> {
+    const existing = await db.select().from(practiceFavorites)
+      .where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db.delete(practiceFavorites).where(eq(practiceFavorites.id, existing[0].id));
+      return false; // Unfavorited
+    }
+
+    await db.insert(practiceFavorites).values({ userId, practiceId });
+    return true; // Favorited
+  }
+
+  async createPracticeSession(data: InsertPracticeSession): Promise<PracticeSession> {
+    const [result] = await db.insert(practiceSessions).values(data).returning();
+    return result;
+  }
+
+  async getUserPracticeSessions(userId: string, limit: number = 20): Promise<(PracticeSession & { practice: Practice })[]> {
+    const sessions = await db.select().from(practiceSessions)
+      .where(eq(practiceSessions.userId, userId))
+      .orderBy(desc(practiceSessions.createdAt))
+      .limit(limit);
+
+    const results = await Promise.all(sessions.map(async (session) => {
+      const practice = await this.getPractice(session.practiceId);
+      return { ...session, practice: practice! };
+    }));
+
+    return results.filter(r => r.practice !== null);
+  }
+
+  async getPracticeUsageStats(userId: string): Promise<{ practiceId: string; count: number; totalDuration: number }[]> {
+    const sessions = await db.select().from(practiceSessions)
+      .where(eq(practiceSessions.userId, userId));
+
+    const stats: Record<string, { count: number; totalDuration: number }> = {};
+
+    for (const session of sessions) {
+      if (!stats[session.practiceId]) {
+        stats[session.practiceId] = { count: 0, totalDuration: 0 };
+      }
+      stats[session.practiceId].count++;
+      stats[session.practiceId].totalDuration += session.durationSeconds;
+    }
+
+    return Object.entries(stats).map(([practiceId, data]) => ({ practiceId, ...data }));
+  }
+
+  // ========== CHALLENGES ==========
+
+  async getChallenges(filters?: { type?: string; category?: string; active?: boolean }): Promise<Challenge[]> {
+    let results = await db.select().from(challenges).orderBy(desc(challenges.createdAt));
+
+    if (!filters) return results;
+
+    return results.filter(c => {
+      if (filters.type && c.challengeType !== filters.type) return false;
+      if (filters.category && c.category !== filters.category) return false;
+      if (filters.active !== undefined && c.isActive !== filters.active) return false;
+      return true;
+    });
+  }
+
+  async getChallenge(id: string): Promise<Challenge | null> {
+    const [result] = await db.select().from(challenges).where(eq(challenges.id, id)).limit(1);
+    return result || null;
+  }
+
+  async createChallenge(data: InsertChallenge): Promise<Challenge> {
+    const [result] = await db.insert(challenges).values(data).returning();
+    return result;
+  }
+
+  async joinChallenge(challengeId: string, oduserId: string): Promise<ChallengeParticipant> {
+    const [result] = await db.insert(challengeParticipants)
+      .values({ challengeId, userId: oduserId })
+      .returning();
+    return result;
+  }
+
+  async leaveChallenge(challengeId: string, userId: string): Promise<void> {
+    await db.delete(challengeParticipants)
+      .where(and(eq(challengeParticipants.challengeId, challengeId), eq(challengeParticipants.userId, userId)));
+  }
+
+  async getChallengeParticipants(challengeId: string): Promise<(ChallengeParticipant & { user: User })[]> {
+    const participants = await db.select().from(challengeParticipants)
+      .where(eq(challengeParticipants.challengeId, challengeId));
+
+    const results = await Promise.all(participants.map(async (p) => {
+      const user = await this.getUser(p.userId);
+      return { ...p, user: user! };
+    }));
+
+    return results.filter(r => r.user !== undefined);
+  }
+
+  async getUserChallenges(userId: string): Promise<(ChallengeParticipant & { challenge: Challenge })[]> {
+    const participations = await db.select().from(challengeParticipants)
+      .where(eq(challengeParticipants.userId, userId));
+
+    const results = await Promise.all(participations.map(async (p) => {
+      const challenge = await this.getChallenge(p.challengeId);
+      return { ...p, challenge: challenge! };
+    }));
+
+    return results.filter(r => r.challenge !== null);
+  }
+
+  async createChallengeCheckin(data: InsertChallengeCheckin): Promise<ChallengeCheckin> {
+    const [result] = await db.insert(challengeCheckins).values(data).returning();
+
+    // Update participant stats
+    if (data.completed) {
+      const participant = await db.select().from(challengeParticipants)
+        .where(eq(challengeParticipants.id, data.participantId))
+        .limit(1);
+
+      if (participant.length > 0) {
+        const p = participant[0];
+        await db.update(challengeParticipants)
+          .set({
+            totalCompletions: p.totalCompletions + 1,
+            currentStreak: p.currentStreak + 1,
+            bestStreak: Math.max(p.bestStreak, p.currentStreak + 1),
+          })
+          .where(eq(challengeParticipants.id, p.id));
+      }
+    }
+
+    return result;
+  }
+
+  async getChallengeLeaderboard(challengeId: string): Promise<{ participant: ChallengeParticipant; user: User; rank: number }[]> {
+    const participants = await db.select().from(challengeParticipants)
+      .where(eq(challengeParticipants.challengeId, challengeId))
+      .orderBy(desc(challengeParticipants.totalCompletions));
+
+    const results = await Promise.all(participants.map(async (p, index) => {
+      const user = await this.getUser(p.userId);
+      return { participant: p, user: user!, rank: index + 1 };
+    }));
+
+    return results.filter(r => r.user !== undefined);
+  }
+
+  // ========== GAMIFICATION ==========
+
+  async getUserGamification(userId: string): Promise<UserGamification> {
+    const [existing] = await db.select().from(userGamification)
+      .where(eq(userGamification.userId, userId))
+      .limit(1);
+
+    if (existing) return existing;
+
+    // Create new gamification record
+    const [result] = await db.insert(userGamification)
+      .values({ userId, totalXp: 0, currentLevel: 1, xpToNextLevel: 100 })
+      .returning();
+    return result;
+  }
+
+  calculateLevel(totalXp: number): { level: number; xpToNextLevel: number } {
+    // XP curve: Level N requires 100 * N XP to reach
+    // Level 1: 0-99 XP, Level 2: 100-299 XP, Level 3: 300-599 XP, etc.
+    let level = 1;
+    let xpForLevel = 100;
+    let cumulativeXp = 0;
+
+    while (cumulativeXp + xpForLevel <= totalXp) {
+      cumulativeXp += xpForLevel;
+      level++;
+      xpForLevel = 100 * level;
+    }
+
+    const xpInCurrentLevel = totalXp - cumulativeXp;
+    const xpToNextLevel = xpForLevel - xpInCurrentLevel;
+
+    return { level, xpToNextLevel };
+  }
+
+  async awardXp(userId: string, amount: number, source: string, sourceId?: string, description?: string): Promise<{ xp: XpTransaction; gamification: UserGamification }> {
+    // Create XP transaction
+    const [xp] = await db.insert(xpTransactions)
+      .values({ userId, amount, source, sourceId, description })
+      .returning();
+
+    // Update gamification
+    const current = await this.getUserGamification(userId);
+    const newTotalXp = current.totalXp + amount;
+    const { level, xpToNextLevel } = this.calculateLevel(newTotalXp);
+
+    const [gamification] = await db.update(userGamification)
+      .set({ totalXp: newTotalXp, currentLevel: level, xpToNextLevel, updatedAt: new Date() })
+      .where(eq(userGamification.userId, userId))
+      .returning();
+
+    return { xp, gamification };
+  }
+
+  async getXpHistory(userId: string, limit: number = 50): Promise<XpTransaction[]> {
+    return db.select().from(xpTransactions)
+      .where(eq(xpTransactions.userId, userId))
+      .orderBy(desc(xpTransactions.createdAt))
+      .limit(limit);
+  }
+
+  // ========== USER GOALS ==========
+
+  async getUserGoals(userId: string): Promise<UserGoal[]> {
+    return db.select().from(userGoals)
+      .where(and(eq(userGoals.userId, userId), eq(userGoals.isActive, true)))
+      .orderBy(userGoals.priority);
+  }
+
+  async createUserGoal(data: InsertUserGoal): Promise<UserGoal> {
+    const [result] = await db.insert(userGoals).values(data).returning();
+    return result;
+  }
+
+  async updateUserGoal(id: string, data: Partial<InsertUserGoal>): Promise<UserGoal> {
+    const [result] = await db.update(userGoals)
+      .set(data)
+      .where(eq(userGoals.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteUserGoal(id: string): Promise<void> {
+    await db.update(userGoals).set({ isActive: false }).where(eq(userGoals.id, id));
+  }
+
+  // ========== EVENTS ==========
+
+  async getEvents(filters?: { type?: string; upcoming?: boolean; published?: boolean }): Promise<Event[]> {
+    let results = await db.select().from(events).orderBy(events.startTime);
+
+    if (!filters) return results;
+
+    const now = new Date();
+    return results.filter(e => {
+      if (filters.type && e.eventType !== filters.type) return false;
+      if (filters.upcoming && new Date(e.startTime) < now) return false;
+      if (filters.published !== undefined && e.isPublished !== filters.published) return false;
+      return true;
+    });
+  }
+
+  async getEvent(id: string): Promise<Event | null> {
+    const [result] = await db.select().from(events).where(eq(events.id, id)).limit(1);
+    return result || null;
+  }
+
+  async createEvent(data: InsertEvent): Promise<Event> {
+    const [result] = await db.insert(events).values(data).returning();
+    return result;
+  }
+
+  async updateEvent(id: string, data: UpdateEvent): Promise<Event> {
+    const [result] = await db.update(events)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(events.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    await db.delete(eventRegistrations).where(eq(eventRegistrations.eventId, id));
+    await db.delete(events).where(eq(events.id, id));
+  }
+
+  async registerForEvent(eventId: string, userId: string): Promise<EventRegistration> {
+    const [result] = await db.insert(eventRegistrations)
+      .values({ eventId, userId })
+      .returning();
+    return result;
+  }
+
+  async cancelEventRegistration(eventId: string, userId: string): Promise<void> {
+    await db.update(eventRegistrations)
+      .set({ status: "cancelled" })
+      .where(and(eq(eventRegistrations.eventId, eventId), eq(eventRegistrations.userId, userId)));
+  }
+
+  async getUserEventRegistrations(userId: string): Promise<(EventRegistration & { event: Event })[]> {
+    const registrations = await db.select().from(eventRegistrations)
+      .where(eq(eventRegistrations.userId, userId));
+
+    const results = await Promise.all(registrations.map(async (r) => {
+      const event = await this.getEvent(r.eventId);
+      return { ...r, event: event! };
+    }));
+
+    return results.filter(r => r.event !== null);
+  }
+
+  async getEventRegistrations(eventId: string): Promise<(EventRegistration & { user: User })[]> {
+    const registrations = await db.select().from(eventRegistrations)
+      .where(eq(eventRegistrations.eventId, eventId));
+
+    const results = await Promise.all(registrations.map(async (r) => {
+      const user = await this.getUser(r.userId);
+      return { ...r, user: user! };
+    }));
+
+    return results.filter(r => r.user !== undefined);
+  }
+
+  // ========== WEEKLY SCORECARDS ==========
+
+  async getWeeklyScorecard(userId: string, weekStart: string): Promise<WeeklyScorecard | null> {
+    const [result] = await db.select().from(weeklyScorecards)
+      .where(and(eq(weeklyScorecards.userId, userId), eq(weeklyScorecards.weekStart, weekStart)))
+      .limit(1);
+    return result || null;
+  }
+
+  async createOrUpdateWeeklyScorecard(data: InsertWeeklyScorecard): Promise<WeeklyScorecard> {
+    const existing = await this.getWeeklyScorecard(data.userId, data.weekStart);
+
+    if (existing) {
+      const [result] = await db.update(weeklyScorecards)
+        .set(data)
+        .where(eq(weeklyScorecards.id, existing.id))
+        .returning();
+      return result;
+    }
+
+    const [result] = await db.insert(weeklyScorecards).values(data).returning();
+    return result;
+  }
+
+  async getUserScorecards(userId: string, limit: number = 12): Promise<WeeklyScorecard[]> {
+    return db.select().from(weeklyScorecards)
+      .where(eq(weeklyScorecards.userId, userId))
+      .orderBy(desc(weeklyScorecards.weekStart))
+      .limit(limit);
+  }
+
+  // ========== USER MILESTONES ==========
+
+  async getUserMilestones(userId: string): Promise<UserMilestone[]> {
+    return db.select().from(userMilestones)
+      .where(eq(userMilestones.userId, userId))
+      .orderBy(desc(userMilestones.achievedAt));
+  }
+
+  async createMilestone(data: InsertUserMilestone): Promise<UserMilestone> {
+    const [result] = await db.insert(userMilestones).values(data).returning();
+    return result;
+  }
+
+  // ========== AI CONVERSATIONS ==========
+
+  async createAiConversation(data: InsertAiConversation): Promise<AiConversation> {
+    const [result] = await db.insert(aiConversations).values(data).returning();
+    return result;
+  }
+
+  async getAiConversation(id: string): Promise<AiConversation | null> {
+    const [result] = await db.select().from(aiConversations)
+      .where(eq(aiConversations.id, id))
+      .limit(1);
+    return result || null;
+  }
+
+  async endAiConversation(id: string, summary?: string): Promise<AiConversation> {
+    const [result] = await db.update(aiConversations)
+      .set({ endedAt: new Date(), summary })
+      .where(eq(aiConversations.id, id))
+      .returning();
+    return result;
+  }
+
+  async getUserAiConversations(userId: string, limit: number = 20): Promise<AiConversation[]> {
+    return db.select().from(aiConversations)
+      .where(eq(aiConversations.userId, userId))
+      .orderBy(desc(aiConversations.startedAt))
+      .limit(limit);
+  }
+
+  async addAiMessage(data: InsertAiMessage): Promise<AiMessage> {
+    const [result] = await db.insert(aiMessages).values(data).returning();
+
+    // Increment message count
+    await db.update(aiConversations)
+      .set({ messagesCount: sql`${aiConversations.messagesCount} + 1` })
+      .where(eq(aiConversations.id, data.conversationId));
+
+    return result;
+  }
+
+  async getConversationMessages(conversationId: string): Promise<AiMessage[]> {
+    return db.select().from(aiMessages)
+      .where(eq(aiMessages.conversationId, conversationId))
+      .orderBy(aiMessages.createdAt);
   }
 }
 
