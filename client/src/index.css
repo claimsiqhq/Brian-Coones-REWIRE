@@ -45,58 +45,58 @@
 }
 
 :root {
-  /* Grounded Warriors - Lighter Dark Palette */
-  /* Softer charcoal with warm forest accents */
+  /* REWIRE - Modern Black/White Palette */
+  /* Clean, minimal dark theme with neutral accents */
   
-  /* Core Brand Colors - Lighter base */
-  --night-forest: 180 6% 14%;      /* #202424 - Lighter charcoal background */
-  --deep-pine: 170 10% 18%;        /* #282E2C - Cards, softer */
-  --forest-floor: 160 10% 35%;     /* #4F5C56 - Borders, lighter */
-  --sage: 140 18% 60%;             /* #8AAE96 - Accent, brighter green */
-  --birch: 38 45% 78%;             /* #E0D4B4 - Primary text, brighter cream */
-  --ember: 25 50% 55%;             /* #C98858 - Warm accent for CTAs */
+  /* Core Brand Colors - REWIRE defaults */
+  --night-forest: 240 21% 15%;     /* #1E1E2E - Dark background */
+  --deep-pine: 245 19% 19%;        /* #272738 - Cards */
+  --forest-floor: 240 12% 26%;     /* #3A3A4A - Borders */
+  --sage: 180 2% 82%;              /* #D0D2D2 - Light gray accent */
+  --birch: 0 0% 98%;               /* #FBFBFB - Near white text */
+  --ember: 180 2% 82%;             /* #D0D2D2 - Neutral accent */
   
-  /* Lighter dark theme */
-  --background: 180 6% 14%;
-  --foreground: 38 45% 82%;
+  /* Dark theme */
+  --background: 240 21% 15%;
+  --foreground: 0 0% 96%;
 
-  /* Cards - lighter surface */
-  --card: 170 10% 18%;
-  --card-foreground: 38 45% 82%;
-  --card-border: 160 10% 35%;
+  /* Cards */
+  --card: 245 19% 19%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 240 12% 26%;
 
   /* Popovers */
-  --popover: 170 10% 20%;
-  --popover-foreground: 38 45% 82%;
+  --popover: 245 19% 21%;
+  --popover-foreground: 0 0% 96%;
 
-  /* Primary: Birch (warm cream) */
-  --primary: 38 45% 78%;
-  --primary-foreground: 180 6% 12%;
+  /* Primary: Birch (near white) */
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 21% 15%;
 
-  /* Secondary: Sage (green accent) */
-  --secondary: 140 18% 60%;
-  --secondary-foreground: 180 6% 12%;
+  /* Secondary: Sage (light gray) */
+  --secondary: 180 2% 82%;
+  --secondary-foreground: 240 21% 15%;
 
-  /* Muted: softer grays */
-  --muted: 180 5% 22%;
-  --muted-foreground: 180 5% 58%;
+  /* Muted: neutral grays */
+  --muted: 240 10% 24%;
+  --muted-foreground: 180 2% 70%;
 
-  /* Accent: Ember - warm terracotta */
-  --accent: 25 50% 55%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent: Neutral */
+  --accent: 180 2% 82%;
+  --accent-foreground: 240 21% 15%;
 
   /* Destructive */
   --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 180 6% 28%;
-  --input: 180 5% 22%;
-  --ring: 38 45% 78%;
+  --border: 240 12% 28%;
+  --input: 240 10% 22%;
+  --ring: 0 0% 98%;
   
   --radius: 0.75rem;
   
-  /* Chart Colors - Balanced Palette */
-  --chart-1: 38 45% 78%;   /* Birch */
+  /* Chart Colors - Neutral Palette */
+  --chart-1: 0 0% 98%;   /* Birch */
   --chart-2: 140 18% 60%;  /* Sage */
   --chart-3: 25 50% 55%;   /* Ember */
   --chart-4: 200 15% 50%;  /* Muted blue-gray */
