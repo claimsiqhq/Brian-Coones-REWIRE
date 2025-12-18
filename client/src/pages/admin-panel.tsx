@@ -274,12 +274,12 @@ function ProfileForm({ profile, onSuccess }: { profile?: AppProfile; onSuccess: 
   const [contactEmail, setContactEmail] = useState(profile?.contactEmail || "");
   const [themeTokens, setThemeTokens] = useState<ThemeTokens>(
     (profile?.themeTokens as ThemeTokens) || {
-      nightForest: "#1a1f1c",
-      deepPine: "#252b27",
-      forestFloor: "#4a5550",
-      sage: "#87A892",
-      birch: "#D4C5A9",
-      ember: "#E07A4A",
+      nightForest: "#1E1E2E",
+      deepPine: "#272738",
+      forestFloor: "#3A3A4A",
+      sage: "#D0D2D2",
+      birch: "#FBFBFB",
+      ember: "#D0D2D2",
     }
   );
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(

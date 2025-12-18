@@ -35,8 +35,8 @@
   --color-birch: hsl(var(--birch));
   --color-ember: hsl(var(--ember));
   
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Montserrat', sans-serif;
+  --font-display: 'Poppins', sans-serif;
   
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -104,48 +104,48 @@
 }
 
 .dark {
-  /* Dark mode is our default - same as :root */
-  --night-forest: 180 8% 7%;
-  --deep-pine: 170 12% 12%;
-  --forest-floor: 160 12% 28%;
-  --sage: 140 15% 55%;
-  --birch: 38 40% 72%;
-  --ember: 25 45% 50%;
+  /* Dark mode - same as :root for REWIRE */
+  --night-forest: 240 21% 15%;
+  --deep-pine: 245 19% 19%;
+  --forest-floor: 240 12% 26%;
+  --sage: 180 2% 82%;
+  --birch: 0 0% 98%;
+  --ember: 180 2% 82%;
   
-  --background: 180 8% 7%;
-  --foreground: 38 40% 72%;
+  --background: 240 21% 15%;
+  --foreground: 0 0% 96%;
 
-  --card: 170 12% 12%;
-  --card-foreground: 38 40% 72%;
-  --card-border: 160 12% 28%;
+  --card: 245 19% 19%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 240 12% 26%;
 
-  --popover: 170 12% 14%;
-  --popover-foreground: 38 40% 72%;
+  --popover: 245 19% 21%;
+  --popover-foreground: 0 0% 96%;
 
-  --primary: 38 40% 72%;
-  --primary-foreground: 180 8% 7%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 21% 15%;
 
-  --secondary: 140 15% 55%;
-  --secondary-foreground: 180 8% 7%;
+  --secondary: 180 2% 82%;
+  --secondary-foreground: 240 21% 15%;
 
-  --muted: 180 6% 16%;
-  --muted-foreground: 180 6% 50%;
+  --muted: 240 10% 24%;
+  --muted-foreground: 180 2% 70%;
 
-  --accent: 25 45% 50%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 180 2% 82%;
+  --accent-foreground: 240 21% 15%;
 
-  --destructive: 0 70% 45%;
+  --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 180 8% 22%;
-  --input: 180 6% 16%;
-  --ring: 38 40% 72%;
+  --border: 240 12% 28%;
+  --input: 240 10% 22%;
+  --ring: 0 0% 98%;
   
-  --chart-1: 38 40% 72%;
-  --chart-2: 140 15% 55%;
-  --chart-3: 25 45% 50%;
-  --chart-4: 200 15% 45%;
-  --chart-5: 160 12% 40%;
+  --chart-1: 0 0% 98%;
+  --chart-2: 140 18% 60%;
+  --chart-3: 25 50% 55%;
+  --chart-4: 200 15% 50%;
+  --chart-5: 160 10% 45%;
 }
 
 @layer base {
