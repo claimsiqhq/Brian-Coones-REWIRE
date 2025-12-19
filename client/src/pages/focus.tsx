@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Play, Pause, RotateCcw, ChevronLeft, Wind, Heart, Zap, Moon, Leaf, Brain, Flame, Volume2, VolumeX, Mic, Music } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronLeft, Wind, Heart, Zap, Moon, Leaf, Brain, Flame, Volume2, VolumeX, Mic, Music, Loader2 } from "lucide-react";
 import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import { useAmbientSound, type Phase } from "@/hooks/useAmbientSound";
+import { usePractice } from "@/lib/api";
+import { useLocation } from "wouter";
 
 type AudioMode = "none" | "voice" | "ambient" | "both";
 
@@ -124,19 +126,66 @@ const techniques: BreathingTechnique[] = [
   },
 ];
 
+// Helper to convert database practice to BreathingTechnique format
+function convertPracticeToTechnique(practice: any): BreathingTechnique | null {
+  if (!practice || !practice.phases) return null;
+
+  const iconMap: Record<string, React.ReactNode> = {
+    moon: <Moon className="w-5 h-5" />,
+    brain: <Brain className="w-5 h-5" />,
+    heart: <Heart className="w-5 h-5" />,
+    zap: <Zap className="w-5 h-5" />,
+    leaf: <Leaf className="w-5 h-5" />,
+    wind: <Wind className="w-5 h-5" />,
+    flame: <Flame className="w-5 h-5" />,
+  };
+
+  return {
+    id: practice.id,
+    name: practice.name,
+    subtitle: practice.subtitle || practice.category,
+    description: practice.description || "",
+    icon: iconMap[practice.iconName] || <Wind className="w-5 h-5" />,
+    color: practice.colorGradient || "from-forest-floor to-deep-pine",
+    phases: practice.phases,
+    cycles: practice.cycles,
+    specialInstructions: practice.specialInstructions,
+  };
+}
+
 export default function Focus() {
+  const [, setLocation] = useLocation();
   const [selectedTechnique, setSelectedTechnique] = useState<BreathingTechnique | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [cycleCount, setCycleCount] = useState(0);
   const [text, setText] = useState("Ready");
   const [audioMode, setAudioMode] = useState<AudioMode>("none");
-  
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(false);
-  
+
   const { speak, stop: stopVoice } = useVoiceGuidance();
   const { start: startAmbient, stop: stopAmbient, pulse: pulseAmbient } = useAmbientSound();
+
+  // Parse practiceId from URL query parameters
+  const practiceId = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("practiceId");
+  }, []);
+
+  // Fetch practice from database if ID is provided
+  const { data: fetchedPractice, isLoading: practiceLoading } = usePractice(practiceId || "");
+
+  // Auto-select fetched practice when loaded
+  useEffect(() => {
+    if (fetchedPractice && !selectedTechnique) {
+      const technique = convertPracticeToTechnique(fetchedPractice);
+      if (technique) {
+        setSelectedTechnique(technique);
+      }
+    }
+  }, [fetchedPractice, selectedTechnique]);
 
   const clearCurrentTimeout = useCallback(() => {
     if (timeoutRef.current) {
@@ -230,6 +279,10 @@ export default function Focus() {
   const handleBack = () => {
     handleReset();
     setSelectedTechnique(null);
+    // If we came from library with practiceId, navigate back to library
+    if (practiceId) {
+      setLocation("/library");
+    }
   };
 
   const getCurrentPhase = (): Phase => {
@@ -258,6 +311,18 @@ export default function Focus() {
     return 0.3;
   };
 
+  // Show loading state when fetching a practice from library
+  if (practiceId && practiceLoading) {
+    return (
+      <MobileLayout>
+        <div className="flex flex-col h-full bg-night-forest items-center justify-center">
+          <Loader2 className="w-10 h-10 text-sage animate-spin" />
+          <p className="text-sage/80 mt-4">Loading practice...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   if (!selectedTechnique) {
     return (
       <MobileLayout>
@@ -266,7 +331,7 @@ export default function Focus() {
             <h1 className="text-2xl font-display font-bold text-birch" data-testid="text-focus-title">Grounding Practice</h1>
             <p className="text-sage/80 mt-1">Anchor yourself through breath</p>
           </div>
-          
+
           <ScrollArea className="flex-1 px-4 pt-4">
             <div className="grid gap-3 pb-6">
               {techniques.map((technique) => (

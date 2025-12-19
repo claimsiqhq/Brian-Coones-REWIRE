@@ -334,6 +334,7 @@ export interface IStorage {
   getChallenges(filters?: { type?: string; category?: string; active?: boolean }): Promise<Challenge[]>;
   getChallenge(id: string): Promise<Challenge | null>;
   createChallenge(data: InsertChallenge): Promise<Challenge>;
+  getChallengeParticipant(challengeId: string, userId: string): Promise<ChallengeParticipant | undefined>;
   joinChallenge(challengeId: string, userId: string): Promise<ChallengeParticipant>;
   leaveChallenge(challengeId: string, userId: string): Promise<void>;
   getChallengeParticipants(challengeId: string): Promise<(ChallengeParticipant & { user: User })[]>;
@@ -2002,9 +2003,22 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async joinChallenge(challengeId: string, oduserId: string): Promise<ChallengeParticipant> {
+  // Check if user is already a participant in a challenge
+  async getChallengeParticipant(challengeId: string, userId: string): Promise<ChallengeParticipant | undefined> {
+    const [participant] = await db
+      .select()
+      .from(challengeParticipants)
+      .where(and(
+        eq(challengeParticipants.challengeId, challengeId),
+        eq(challengeParticipants.userId, userId)
+      ))
+      .limit(1);
+    return participant;
+  }
+
+  async joinChallenge(challengeId: string, userId: string): Promise<ChallengeParticipant> {
     const [result] = await db.insert(challengeParticipants)
-      .values({ challengeId, userId: oduserId })
+      .values({ challengeId, userId })
       .returning();
     return result;
   }
@@ -2111,19 +2125,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async awardXp(userId: string, amount: number, source: string, sourceId?: string, description?: string): Promise<{ xp: XpTransaction; gamification: UserGamification }> {
-    // Create XP transaction
-    const [xp] = await db.insert(xpTransactions)
-      .values({ userId, amount, source, sourceId, description })
+    // Use atomic SQL increment to prevent race conditions
+    // First, atomically increment the XP
+    const [updated] = await db.update(userGamification)
+      .set({
+        totalXp: sql`${userGamification.totalXp} + ${amount}`,
+        updatedAt: new Date()
+      })
+      .where(eq(userGamification.userId, userId))
       .returning();
 
-    // Update gamification
-    const current = await this.getUserGamification(userId);
-    const newTotalXp = current.totalXp + amount;
-    const { level, xpToNextLevel } = this.calculateLevel(newTotalXp);
+    // If no record exists, create one first
+    let gamification = updated;
+    if (!gamification) {
+      const [created] = await db.insert(userGamification)
+        .values({ userId, totalXp: amount })
+        .returning();
+      gamification = created;
+    }
 
-    const [gamification] = await db.update(userGamification)
-      .set({ totalXp: newTotalXp, currentLevel: level, xpToNextLevel, updatedAt: new Date() })
-      .where(eq(userGamification.userId, userId))
+    // Calculate and update level based on new total
+    const { level, xpToNextLevel } = this.calculateLevel(gamification.totalXp);
+    if (gamification.currentLevel !== level || gamification.xpToNextLevel !== xpToNextLevel) {
+      const [levelUpdated] = await db.update(userGamification)
+        .set({ currentLevel: level, xpToNextLevel, updatedAt: new Date() })
+        .where(eq(userGamification.userId, userId))
+        .returning();
+      gamification = levelUpdated;
+    }
+
+    // Create XP transaction record
+    const [xp] = await db.insert(xpTransactions)
+      .values({ userId, amount, source, sourceId, description })
       .returning();
 
     return { xp, gamification };

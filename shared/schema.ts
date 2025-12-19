@@ -129,6 +129,7 @@ export const userSettings = pgTable("user_settings", {
   notifications: boolean("notifications").notNull().default(true),
   darkMode: boolean("dark_mode").notNull().default(false),
   reminderTime: text("reminder_time").notNull().default("09:00"),
+  timezone: text("timezone").notNull().default("UTC"),
   privacyShareMoods: boolean("privacy_share_moods").notNull().default(true),
   privacyShareJournals: boolean("privacy_share_journals").notNull().default(false),
   privacyShareHabits: boolean("privacy_share_habits").notNull().default(true),

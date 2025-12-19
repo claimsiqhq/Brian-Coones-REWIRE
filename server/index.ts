@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { storage } from "./storage";
 
 const app = express();
 const httpServer = createServer(app);
@@ -92,8 +93,20 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     },
-    () => {
+    async () => {
       log(`serving on port ${port}`);
+
+      // Auto-seed practices if the practice library is empty
+      try {
+        const existingPractices = await storage.getAllPractices({ limit: 1 } as any);
+        if (!existingPractices || existingPractices.length === 0) {
+          log("No practices found, seeding default practices...");
+          await storage.seedDefaultPractices();
+          log("Default practices seeded successfully");
+        }
+      } catch (error) {
+        log(`Practice seeding check failed: ${error}`, "warning");
+      }
     },
   );
 })();

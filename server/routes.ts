@@ -15,14 +15,35 @@ import {
   insertCoachingSessionSchema,
   updateCoachingSessionSchema,
 } from "@shared/schema";
+import { z } from "zod";
+
+// Validation schema for daily metrics with proper range constraints
+const dailyMetricsSchema = z.object({
+  date: z.string().optional(),
+  moodScore: z.number().int().min(1).max(5).optional(),
+  energyScore: z.number().int().min(1).max(10).optional(),
+  stressScore: z.number().int().min(1).max(10).optional(),
+  sleepHours: z.number().min(0).max(24).optional(),
+  sleepQuality: z.number().int().min(1).max(5).optional(),
+  notes: z.string().max(2000).optional(),
+});
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "./google-calendar";
 import { sendCoachInviteEmail, sendDailyReminderEmail, sendWelcomeEmail, sendSessionBookingEmail as sendSessionEmailSendGrid, sendTestEmail } from "./sendgrid";
 import crypto from "crypto";
 
 const journalPromptsCache = new Map<string, { prompts: string[]; date: string }>();
 
+// Maximum limit for paginated queries to prevent DOS attacks
+const MAX_QUERY_LIMIT = 100;
+
 function getTodayDateString(): string {
   return new Date().toISOString().split('T')[0];
+}
+
+// Helper to safely parse and cap query limits
+function parseQueryLimit(value: string | undefined, defaultLimit: number): number {
+  const parsed = parseInt(value as string) || defaultLimit;
+  return Math.min(Math.max(1, parsed), MAX_QUERY_LIMIT);
 }
 
 function getUserId(req: any): string {
@@ -1866,10 +1887,23 @@ export async function registerRoutes(
   app.post("/api/metrics", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const date = req.body.date || getTodayDateString();
-      const { moodScore, energyScore, stressScore, sleepHours, sleepQuality, notes } = req.body;
 
-      const metrics = await storage.createOrUpdateDailyMetrics(userId, date, {
+      // Validate request body with Zod schema
+      const validation = dailyMetricsSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({
+          error: "Invalid metrics data",
+          details: validation.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        });
+      }
+
+      const { date, moodScore, energyScore, stressScore, sleepHours, sleepQuality, notes } = validation.data;
+      const metricsDate = date || getTodayDateString();
+
+      const metrics = await storage.createOrUpdateDailyMetrics(userId, metricsDate, {
         moodScore, energyScore, stressScore, sleepHours, sleepQuality, notes
       });
 
@@ -2045,7 +2079,7 @@ export async function registerRoutes(
   app.get("/api/practices/history/list", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseQueryLimit(req.query.limit as string, 20);
       const sessions = await storage.getUserPracticeSessions(userId, limit);
       res.json(sessions);
     } catch (error) {
@@ -2121,6 +2155,13 @@ export async function registerRoutes(
   app.post("/api/challenges/:id/join", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
+
+      // Check if user is already a participant
+      const existing = await storage.getChallengeParticipant(req.params.id, userId);
+      if (existing) {
+        return res.status(409).json({ error: "Already joined this challenge" });
+      }
+
       const participant = await storage.joinChallenge(req.params.id, userId);
       res.json(participant);
     } catch (error) {
@@ -2210,7 +2251,7 @@ export async function registerRoutes(
   app.get("/api/gamification/xp-history", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const limit = parseInt(req.query.limit as string) || 50;
+      const limit = parseQueryLimit(req.query.limit as string, 50);
       const history = await storage.getXpHistory(userId, limit);
       res.json(history);
     } catch (error) {
@@ -2424,7 +2465,7 @@ export async function registerRoutes(
   app.get("/api/scorecards/history", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const limit = parseInt(req.query.limit as string) || 12;
+      const limit = parseQueryLimit(req.query.limit as string, 12);
       const scorecards = await storage.getUserScorecards(userId, limit);
       res.json(scorecards);
     } catch (error) {
@@ -2483,7 +2524,7 @@ export async function registerRoutes(
   app.get("/api/ai/conversations", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseQueryLimit(req.query.limit as string, 20);
       const conversations = await storage.getUserAiConversations(userId, limit);
       res.json(conversations);
     } catch (error) {

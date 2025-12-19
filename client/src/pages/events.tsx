@@ -38,6 +38,7 @@ import {
   useMyEventRegistrations,
   useRegisterForEvent,
   useCancelEventRegistration,
+  useUser,
   type Event,
   type EventRegistration,
 } from "@/lib/api";
@@ -99,20 +100,85 @@ function isUpcoming(dateStr: string): boolean {
   return new Date(dateStr) > new Date();
 }
 
+// VIP early access helper functions
+function isVipUser(accountTier?: string): boolean {
+  return accountTier === "member" || accountTier === "coach";
+}
+
+function isInEarlyAccessWindow(event: Event): boolean {
+  if (!event.vipEarlyAccessHours || event.vipEarlyAccessHours <= 0) return false;
+  const now = new Date();
+  const eventStart = new Date(event.startTime);
+  const earlyAccessStart = new Date(eventStart.getTime() - (event.vipEarlyAccessHours * 60 * 60 * 1000));
+  return now >= earlyAccessStart && now < eventStart;
+}
+
+function canRegisterForEvent(event: Event, userAccountTier?: string): { canRegister: boolean; reason?: string } {
+  const now = new Date();
+  const eventStart = new Date(event.startTime);
+
+  // Event already started
+  if (now >= eventStart) {
+    return { canRegister: false, reason: "Event has already started" };
+  }
+
+  // No early access restriction
+  if (!event.vipEarlyAccessHours || event.vipEarlyAccessHours <= 0) {
+    return { canRegister: true };
+  }
+
+  // In early access window - only VIP can register
+  if (isInEarlyAccessWindow(event)) {
+    if (isVipUser(userAccountTier)) {
+      return { canRegister: true };
+    }
+    return { canRegister: false, reason: "VIP early access only" };
+  }
+
+  // General registration open (after early access window ends or hasn't started)
+  return { canRegister: true };
+}
+
+function formatTimeUntilOpen(event: Event): string {
+  const now = new Date();
+  const eventStart = new Date(event.startTime);
+  const earlyAccessEnd = eventStart; // Public registration starts when event starts
+  const msRemaining = earlyAccessEnd.getTime() - now.getTime();
+
+  if (msRemaining <= 0) return "Open now";
+
+  const hours = Math.floor(msRemaining / (1000 * 60 * 60));
+  const minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `Opens in ${days}d`;
+  }
+  if (hours > 0) {
+    return `Opens in ${hours}h ${minutes}m`;
+  }
+  return `Opens in ${minutes}m`;
+}
+
 function EventCard({
   event,
   registration,
   onRegister,
   onViewDetails,
+  userAccountTier,
 }: {
   event: Event;
   registration?: EventRegistration;
   onRegister?: () => void;
   onViewDetails: () => void;
+  userAccountTier?: string;
 }) {
   const isRegistered = registration?.status === "registered";
   const upcoming = isUpcoming(event.startTime);
   const hasRecording = !!event.recordingUrl;
+  const { canRegister, reason } = canRegisterForEvent(event, userAccountTier);
+  const inEarlyAccess = isInEarlyAccessWindow(event);
+  const isVip = isVipUser(userAccountTier);
 
   return (
     <motion.div
@@ -188,22 +254,26 @@ function EventCard({
                   {formatPrice(event.priceCents)}
                 </Badge>
                 {event.vipEarlyAccessHours > 0 && (
-                  <Badge className="text-[10px] h-5 px-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500/30 text-amber-400">
+                  <Badge className={`text-[10px] h-5 px-1.5 ${inEarlyAccess && isVip ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30 text-green-400" : "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500/30 text-amber-400"}`}>
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-                    VIP
+                    {inEarlyAccess && isVip ? "VIP Access" : inEarlyAccess ? "VIP Only" : "VIP Early Access"}
                   </Badge>
                 )}
               </div>
               {upcoming && !isRegistered && onRegister && (
                 <Button
                   size="sm"
-                  className="h-7 px-3 text-xs bg-birch/20 hover:bg-birch/30 text-birch"
+                  className={`h-7 px-3 text-xs ${canRegister ? "bg-birch/20 hover:bg-birch/30 text-birch" : "bg-gray-500/20 text-gray-400 cursor-not-allowed"}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRegister();
+                    if (canRegister) {
+                      onRegister();
+                    }
                   }}
+                  disabled={!canRegister}
+                  title={reason || undefined}
                 >
-                  Register
+                  {canRegister ? "Register" : (inEarlyAccess ? "VIP Only" : "Register")}
                 </Button>
               )}
             </div>
@@ -218,6 +288,7 @@ export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [activeType, setActiveType] = useState<string | undefined>(undefined);
 
+  const { data: user } = useUser();
   const { data: allEvents, isLoading } = useEvents({ upcoming: true });
   const { data: recordingEvents, isLoading: recordingsLoading } = useEvents({ hasRecording: true });
   const { data: myRegistrations } = useMyEventRegistrations();
@@ -333,6 +404,7 @@ export default function Events() {
                     registration={registrationMap.get(event.id)}
                     onRegister={() => handleRegister(event.id)}
                     onViewDetails={() => setSelectedEvent(event)}
+                    userAccountTier={user?.accountTier}
                   />
                 ))
               )}
@@ -354,6 +426,7 @@ export default function Events() {
                         event={event}
                         registration={registrationMap.get(event.id)}
                         onViewDetails={() => setSelectedEvent(event)}
+                        userAccountTier={user?.accountTier}
                       />
                     )
                 )
@@ -380,6 +453,7 @@ export default function Events() {
                     event={event}
                     registration={registrationMap.get(event.id)}
                     onViewDetails={() => setSelectedEvent(event)}
+                    userAccountTier={user?.accountTier}
                   />
                 ))
               )}

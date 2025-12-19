@@ -4,12 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loader2, Volume2, VolumeX, Send, Phone, PhoneOff, Mic, Timer, CheckCircle2, Flame, Clock } from "lucide-react";
+import { Loader2, Volume2, VolumeX, Send, Phone, PhoneOff, Mic, Timer, CheckCircle2, Flame, Clock, History } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import coachImage from "@assets/IMG_4394_1764991487260.jpeg";
 import { RealtimeAgent, RealtimeSession } from "@openai/agents-realtime";
 import { useTodayMicroSession, useCompleteMicroSession } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { ConversationHistory } from "@/components/ai/ConversationHistory";
 
 interface Message {
   id: number;
@@ -186,8 +194,6 @@ export default function Voice() {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        console.error('Failed to get session key:', error);
         throw new Error('Failed to get session key');
       }
 
@@ -208,8 +214,7 @@ export default function Voice() {
       });
       sessionRef.current = session;
 
-      session.on('error', (error) => {
-        console.error('Session error:', error);
+      session.on('error', () => {
         setConnectionState("error");
       });
 
@@ -253,8 +258,7 @@ export default function Voice() {
       
       addMessage("Voice call connected! I can hear you now - go ahead and speak.", "agent");
 
-    } catch (error) {
-      console.error('Failed to start voice session:', error);
+    } catch {
       setConnectionState("error");
       addMessage("Voice calls are not available right now. Your OpenAI account may need Realtime API access enabled. Please use text chat below - I'm here to help!", "agent");
     }
@@ -326,8 +330,7 @@ export default function Voice() {
       };
       
       await audio.play();
-    } catch (error) {
-      console.error('TTS error:', error);
+    } catch {
       setIsPlayingAudio(false);
     }
   }, []);
@@ -374,8 +377,7 @@ export default function Voice() {
       if (voiceModeRef.current === "on") {
         playTTS(data.response);
       }
-    } catch (error) {
-      console.error('Chat error:', error);
+    } catch {
       addMessage("I'm having a moment of reflection. Could you try again?", "agent");
     } finally {
       setIsProcessing(false);
@@ -459,6 +461,28 @@ export default function Voice() {
               </div>
             )}
             <div className="flex items-center gap-1">
+              {/* Conversation History Button */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 text-white/80 hover:text-white hover:bg-white/20"
+                    data-testid="button-history"
+                    aria-label="View conversation history"
+                  >
+                    <History className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="bg-night-forest border-forest-floor w-80">
+                  <SheetHeader>
+                    <SheetTitle className="text-birch">Conversation History</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-4 h-[calc(100%-60px)]">
+                    <ConversationHistory />
+                  </div>
+                </SheetContent>
+              </Sheet>
               {isPlayingAudio && (
                 <Button
                   variant="ghost"
