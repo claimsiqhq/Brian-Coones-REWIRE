@@ -9,7 +9,6 @@ import {
   ChevronRight,
   User,
   Volume2,
-  Moon,
   Clock,
   Shield,
   HelpCircle,
@@ -22,9 +21,7 @@ import {
   UserCog,
   Camera,
   Loader2,
-  RefreshCw,
   Video,
-  Calendar,
   CheckCircle2,
   XCircle
 } from "lucide-react";
@@ -40,7 +37,6 @@ import { useUserSettings, useUpdateUserSettings, useMyCoach, useUpdateUserProfil
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "next-themes";
 
 export default function Profile() {
   const { user, logoutMutation, isCoach, isSuperAdmin, refetchUser } = useAuth();
@@ -79,7 +75,6 @@ export default function Profile() {
   const updateProfileMutation = useUpdateUserProfile();
   const deleteDataMutation = useDeleteAllUserData();
   const { toast } = useToast();
-  const { setTheme } = useTheme();
 
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -145,9 +140,6 @@ export default function Profile() {
   };
 
   const handleSettingChange = (key: string, value: boolean | string) => {
-    if (key === "darkMode") {
-      setTheme(value ? "dark" : "light");
-    }
     updateSettingsMutation.mutate({ [key]: value }, {
       onSuccess: () => {
         toast({
@@ -209,7 +201,6 @@ export default function Profile() {
 
   const coachVoice = settings?.coachVoice ?? true;
   const notifications = settings?.notifications ?? true;
-  const darkMode = settings?.darkMode ?? false;
   const reminderTime = settings?.reminderTime ?? "09:00";
   const privacyShareMoods = settings?.privacyShareMoods ?? true;
   const privacyShareJournals = settings?.privacyShareJournals ?? false;
@@ -352,31 +343,6 @@ export default function Profile() {
                       </Select>
                     </div>
                   )}
-                </div>
-              </Card>
-            </div>
-
-            <div className="space-y-1">
-              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Appearance</h3>
-              <Card className="border border-forest-floor/40 shadow-sm overflow-hidden bg-deep-pine">
-                <div className="divide-y divide-border/50">
-                  <div className="p-3 flex items-center justify-between" data-testid="setting-dark-mode">
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-slate-100 text-slate-600 rounded-lg">
-                        <Moon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="font-medium text-xs block">Dark Mode</span>
-                        <span className="text-[10px] text-muted-foreground">Easier on the eyes at night</span>
-                      </div>
-                    </div>
-                    <Switch 
-                      checked={darkMode} 
-                      onCheckedChange={(value) => handleSettingChange("darkMode", value)}
-                      className="scale-75 origin-right" 
-                      data-testid="switch-dark-mode" 
-                    />
-                  </div>
                 </div>
               </Card>
             </div>
@@ -617,7 +583,7 @@ export default function Profile() {
             </Button>
 
             <p className="text-center text-[10px] text-muted-foreground pt-2">
-              MindfulCoach v1.0.0
+              REWIRE v1.0.0
             </p>
           </div>
         </ScrollArea>

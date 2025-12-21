@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindfulcoach-v1';
+const CACHE_NAME = 'rewire-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

@@ -4,10 +4,9 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider, useTheme } from "next-themes";
+import { ThemeProvider } from "next-themes";
 import { AppProfileProvider } from "@/hooks/useAppProfile";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserSettings } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
 // Store pending invite code for redirect after login
@@ -33,19 +32,6 @@ const Challenges = lazy(() => import("@/pages/challenges"));
 const Events = lazy(() => import("@/pages/events"));
 const Metrics = lazy(() => import("@/pages/metrics"));
 
-// ThemeSync component to sync settings with theme
-function ThemeSync() {
-  const { data: settings } = useUserSettings();
-  const { setTheme } = useTheme();
-
-  useEffect(() => {
-    if (settings?.darkMode !== undefined) {
-      setTheme(settings.darkMode ? "dark" : "light");
-    }
-  }, [settings?.darkMode, setTheme]);
-
-  return null;
-}
 
 // Loading fallback component for lazy loaded pages
 function PageLoader() {
@@ -64,9 +50,7 @@ function AuthenticatedRouter() {
   // No need to check for missing role - all new users have one
 
   return (
-    <>
-      <ThemeSync />
-      <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<PageLoader />}>
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/journal" component={Journal} />
@@ -84,8 +68,7 @@ function AuthenticatedRouter() {
           <Route path="/metrics" component={Metrics} />
           <Route component={NotFound} />
         </Switch>
-      </Suspense>
-    </>
+    </Suspense>
   );
 }
 

@@ -235,37 +235,42 @@ export default function Home() {
   return (
     <MobileLayout>
       <div className="flex flex-col h-full overflow-y-auto">
-        {/* Forest Header */}
-        <div className="relative w-full h-36 shrink-0 overflow-hidden rounded-b-[2rem] shadow-lg z-10">
+        {/* Compact Header */}
+        <div className="relative w-full h-24 shrink-0 overflow-hidden rounded-b-2xl shadow-lg z-10">
           <div className="absolute inset-0 bg-gradient-to-br from-deep-pine via-forest-floor/80 to-night-forest" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(143,166,143,0.15),transparent_50%)]" />
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-night-forest/50 to-transparent" />
-          
-          <div className="absolute top-0 left-0 right-0 p-5 pt-6 flex justify-between items-center z-10">
-            <div>
-              <p className="text-xs font-medium text-sage/80 uppercase tracking-wider mb-0.5">{new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</p>
-              <h1 className="text-2xl font-display font-bold text-birch leading-tight drop-shadow-sm">{greeting()},<br/>{displayName}</h1>
-            </div>
-            <div className="flex gap-3 items-center">
-              {/* Level Badge */}
-              {gamification && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-birch/20 rounded-full backdrop-blur-sm border border-birch/30">
-                  <Award className="w-4 h-4 text-birch" />
-                  <span className="text-xs font-bold text-birch">Lv.{gamification.currentLevel}</span>
-                </div>
-              )}
+
+          <div className="absolute inset-0 px-4 py-3 flex justify-between items-center z-10">
+            <div className="flex items-center gap-3">
               <Link href="/profile">
-                <Avatar className="h-11 w-11 border-3 border-sage/30 shadow-xl cursor-pointer ring-2 ring-sage/20" aria-label="Go to profile">
+                <Avatar className="h-10 w-10 border-2 border-sage/30 shadow-lg cursor-pointer" aria-label="Go to profile">
                   {user?.profileImageUrl && <AvatarImage src={user.profileImageUrl} alt={displayName} />}
-                  <AvatarFallback className="bg-forest-floor text-birch">{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-forest-floor text-birch text-sm">{initials}</AvatarFallback>
                 </Avatar>
               </Link>
+              <div>
+                <p className="text-[10px] font-medium text-sage/70 uppercase tracking-wider">{new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</p>
+                <h1 className="text-lg font-display font-bold text-birch leading-tight">{greeting()}, {displayName}</h1>
+              </div>
+            </div>
+            <div className="flex gap-2 items-center">
+              {gamification && (
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-birch/20 rounded-full border border-birch/30">
+                  <Award className="w-3 h-3 text-birch" />
+                  <span className="text-[10px] font-bold text-birch">Lv.{gamification.currentLevel}</span>
+                </div>
+              )}
+              {habitStats && habitStats.currentStreak > 0 && (
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-ember/20 rounded-full border border-ember/30">
+                  <Flame className="w-3 h-3 text-ember" />
+                  <span className="text-[10px] font-bold text-ember">{habitStats.currentStreak}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="flex-1 p-4 pt-2 flex flex-col gap-3 pb-4">
+        {/* Dashboard Grid - Compact spacing */}
+        <div className="flex-1 px-3 pt-2 flex flex-col gap-2 pb-2">
 
           {/* Upcoming Session Card - Only for clients with scheduled sessions */}
           {isClient && nextSession && (
@@ -461,55 +466,55 @@ export default function Home() {
           </Link>
           )}
 
-          {/* Quick Stats Summary */}
+          {/* Quick Stats - Ultra compact horizontal strip */}
           {dashboardStats && (
             <Link href="/stats">
-              <div className="shrink-0 grid grid-cols-4 gap-2" data-testid="dashboard-summary">
-                <div className="bg-gradient-to-br from-deep-pine to-forest-floor/30 rounded-xl p-2.5 text-center shadow-sm border border-forest-floor/30">
-                  <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-forest-floor/30 flex items-center justify-center">
-                    <Smile className="w-4 h-4 text-sage" />
-                  </div>
-                  <p className="text-lg font-bold text-birch" data-testid="stat-mood-checkins">{dashboardStats.totalMoodCheckins}</p>
-                  <p className="text-[9px] text-sage/70 font-medium">Ground</p>
+              <div className="shrink-0 flex justify-between items-center bg-deep-pine/80 rounded-xl px-3 py-2 border border-forest-floor/30" data-testid="dashboard-summary">
+                <div className="flex items-center gap-1.5">
+                  <Smile className="w-3.5 h-3.5 text-sage" />
+                  <span className="text-sm font-bold text-birch" data-testid="stat-mood-checkins">{dashboardStats.totalMoodCheckins}</span>
                 </div>
-                <div className="bg-gradient-to-br from-deep-pine to-forest-floor/30 rounded-xl p-2.5 text-center shadow-sm border border-forest-floor/30">
-                  <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-forest-floor/30 flex items-center justify-center">
-                    <BookHeart className="w-4 h-4 text-sage" />
-                  </div>
-                  <p className="text-lg font-bold text-birch" data-testid="stat-journal-entries">{dashboardStats.totalJournalEntries}</p>
-                  <p className="text-[9px] text-sage/70 font-medium">Reflect</p>
+                <div className="w-px h-4 bg-forest-floor/50" />
+                <div className="flex items-center gap-1.5">
+                  <BookHeart className="w-3.5 h-3.5 text-sage" />
+                  <span className="text-sm font-bold text-birch" data-testid="stat-journal-entries">{dashboardStats.totalJournalEntries}</span>
                 </div>
-                <div className="bg-gradient-to-br from-deep-pine to-forest-floor/30 rounded-xl p-2.5 text-center shadow-sm border border-forest-floor/30">
-                  <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-forest-floor/30 flex items-center justify-center">
-                    <Target className="w-4 h-4 text-sage" />
-                  </div>
-                  <p className="text-lg font-bold text-birch" data-testid="stat-habits-completed">{dashboardStats.totalHabitsCompleted}</p>
-                  <p className="text-[9px] text-sage/70 font-medium">Anchors</p>
+                <div className="w-px h-4 bg-forest-floor/50" />
+                <div className="flex items-center gap-1.5">
+                  <Target className="w-3.5 h-3.5 text-sage" />
+                  <span className="text-sm font-bold text-birch" data-testid="stat-habits-completed">{dashboardStats.totalHabitsCompleted}</span>
                 </div>
-                <div className="bg-gradient-to-br from-deep-pine to-forest-floor/30 rounded-xl p-2.5 text-center shadow-sm border border-forest-floor/30">
-                  <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-forest-floor/30 flex items-center justify-center">
-                    <Flame className="w-4 h-4 text-birch" />
-                  </div>
-                  <p className="text-lg font-bold text-birch" data-testid="stat-current-streak">{dashboardStats.currentStreak}</p>
-                  <p className="text-[9px] text-sage/70 font-medium">Streak</p>
+                <div className="w-px h-4 bg-forest-floor/50" />
+                <div className="flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-ember" />
+                  <span className="text-sm font-bold text-birch" data-testid="stat-current-streak">{dashboardStats.currentStreak}</span>
                 </div>
+                <ChevronRight className="w-4 h-4 text-sage/50" />
               </div>
             </Link>
           )}
 
-          {/* Row 1: Daily Ground Check */}
+          {/* Row 1: Daily Ground Check - Compact */}
           {showGroundCheck && (
           <div className="shrink-0">
-            <Card className="border-none shadow-lg bg-deep-pine/95 backdrop-blur-md overflow-hidden">
-              <CardContent className="p-3 relative">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-sage/10 to-transparent rounded-bl-full pointer-events-none" />
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-sm text-sage">How are you grounded today?</h2>
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-birch to-birch/70 flex items-center justify-center shadow-sm">
-                    <Sun className="h-3.5 w-3.5 text-night-forest" />
-                  </div>
+            <Card className="border-none shadow-lg bg-deep-pine/95 overflow-hidden">
+              <CardContent className="p-2.5">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-semibold text-xs text-sage">How are you grounded?</h2>
+                  {moodTrends.length > 0 && (
+                    <div className="flex gap-0.5" data-testid="mood-trends-container">
+                      {moodTrends.slice(-7).map((trend, i) => {
+                        const moodStyle = getMoodDisplay(trend.mood);
+                        return (
+                          <div key={i} className={`w-4 h-4 rounded-full ${moodStyle.bg} flex items-center justify-center`} data-testid={`mood-trend-${i}`} title={`${formatTrendDate(trend.date)}: ${trend.mood}`}>
+                            <moodStyle.icon className={`w-2.5 h-2.5 ${moodStyle.color}`} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between gap-1.5" role="group" aria-label="Select how grounded you feel">
+                <div className="flex justify-between gap-1" role="group" aria-label="Select how grounded you feel">
                   {[
                     { icon: Frown, label: "Rough", color: "text-rose-400", bg: "bg-rose-900/30", activeBg: "bg-rose-900/50", ring: "ring-rose-500" },
                     { icon: Cloud, label: "Okay", color: "text-slate-400", bg: "bg-slate-800/30", activeBg: "bg-slate-800/50", ring: "ring-slate-500" },
@@ -523,54 +528,44 @@ export default function Home() {
                       onClick={() => handleMoodSelect(mood.label)}
                       aria-label={`Log ground check as ${mood.label}`}
                       aria-pressed={selectedMood === mood.label}
-                      className={`flex flex-col items-center justify-center p-1.5 rounded-xl transition-all flex-1 h-16 ${
+                      className={`flex flex-col items-center justify-center p-1 rounded-lg transition-all flex-1 h-12 ${
                         selectedMood === mood.label
-                          ? `${mood.activeBg} ring-2 ${mood.ring} scale-105 shadow-md`
-                          : `${mood.bg} hover:scale-102 hover:shadow-sm`
+                          ? `${mood.activeBg} ring-1 ${mood.ring} scale-105`
+                          : `${mood.bg} hover:scale-102`
                       }`}
                     >
-                      <mood.icon className={`w-6 h-6 mb-1 ${mood.color} ${selectedMood === mood.label ? 'animate-bounce' : ''}`} aria-hidden="true" style={{ animationDuration: '1s', animationIterationCount: selectedMood === mood.label ? 1 : 0 }} />
-                      <span className={`text-[9px] font-semibold ${selectedMood === mood.label ? mood.color : 'text-muted-foreground'}`}>{mood.label}</span>
+                      <mood.icon className={`w-5 h-5 ${mood.color}`} aria-hidden="true" />
+                      <span className={`text-[8px] font-semibold mt-0.5 ${selectedMood === mood.label ? mood.color : 'text-muted-foreground'}`}>{mood.label}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* Energy & Stress Levels */}
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-medium text-sage/70 flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Energy
-                      </label>
-                      <span className="text-xs font-bold text-birch">{energyLevel}/5</span>
-                    </div>
-                    <div className="flex gap-1">
+                {/* Energy & Stress - Inline compact */}
+                <div className="mt-2 flex gap-3">
+                  <div className="flex-1 flex items-center gap-2">
+                    <Zap className="w-3 h-3 text-birch shrink-0" />
+                    <div className="flex gap-0.5 flex-1">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <button
                           key={level}
                           onClick={() => setEnergyLevel(level)}
                           data-testid={`button-energy-${level}`}
-                          className={`flex-1 h-2 rounded-full transition-all ${
+                          className={`flex-1 h-1.5 rounded-full transition-all ${
                             level <= energyLevel ? 'bg-birch' : 'bg-forest-floor/40'
                           }`}
                         />
                       ))}
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-medium text-sage/70 flex items-center gap-1">
-                        <Heart className="w-3 h-3" /> Stress
-                      </label>
-                      <span className="text-xs font-bold text-birch">{stressLevel}/5</span>
-                    </div>
-                    <div className="flex gap-1">
+                  <div className="flex-1 flex items-center gap-2">
+                    <Heart className="w-3 h-3 text-rose-400 shrink-0" />
+                    <div className="flex gap-0.5 flex-1">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <button
                           key={level}
                           onClick={() => setStressLevel(level)}
                           data-testid={`button-stress-${level}`}
-                          className={`flex-1 h-2 rounded-full transition-all ${
+                          className={`flex-1 h-1.5 rounded-full transition-all ${
                             level <= stressLevel ? 'bg-rose-400' : 'bg-forest-floor/40'
                           }`}
                         />
@@ -578,68 +573,37 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                
-                {/* 7-Day Ground History */}
-                {moodTrends.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-forest-floor/30">
-                    <p className="text-[10px] font-medium text-sage/70 mb-2">Your Week</p>
-                    <div className="flex justify-between gap-1" data-testid="mood-trends-container">
-                      {moodTrends.slice(-7).map((trend, i) => {
-                        const moodStyle = getMoodDisplay(trend.mood);
-                        const MoodIcon = moodStyle.icon;
-                        return (
-                          <div key={i} className="flex flex-col items-center" data-testid={`mood-trend-${i}`}>
-                            <div className={`w-7 h-7 rounded-full ${moodStyle.bg} flex items-center justify-center mb-0.5`}>
-                              <MoodIcon className={`w-4 h-4 ${moodStyle.color}`} />
-                            </div>
-                            <span className="text-[8px] text-sage/60 font-medium">{formatTrendDate(trend.date)}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
           )}
 
-          {/* Row 2: Daily Anchors (Fills remaining space) */}
+          {/* Row 2: Daily Anchors - Compact list */}
           {showDailyAnchors && (
-          <Card className="border-none shadow-lg flex-1 min-h-0 flex flex-col bg-gradient-to-br from-deep-pine to-forest-floor/20 backdrop-blur-sm overflow-hidden">
-            <CardContent className="p-4 flex-1 min-h-0 flex flex-col relative">
-              <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-tl from-sage/10 to-transparent rounded-full pointer-events-none" />
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-sm text-sage">Daily Anchors</h3>
-                  {habitStats && habitStats.currentStreak > 0 && (
-                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-birch/20 rounded-full" data-testid="habit-streak-badge">
-                      <Flame className="w-3 h-3 text-birch" />
-                      <span className="text-[10px] font-bold text-birch" data-testid="text-habit-streak">{habitStats.currentStreak}</span>
-                    </div>
-                  )}
-                </div>
+          <Card className="border-none shadow-lg flex-1 min-h-0 flex flex-col bg-deep-pine/95 overflow-hidden">
+            <CardContent className="p-2.5 flex-1 min-h-0 flex flex-col">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-xs text-sage">Daily Anchors</h3>
                 <div className="flex items-center gap-2">
                   <div
-                    className="h-2 w-16 bg-forest-floor/30 rounded-full overflow-hidden"
+                    className="h-1.5 w-12 bg-forest-floor/30 rounded-full overflow-hidden"
                     role="progressbar"
                     aria-valuenow={habitsWithCompletions.filter(h => h.completed).length}
                     aria-valuemin={0}
                     aria-valuemax={habitsWithCompletions.length}
-                    aria-label={`${habitsWithCompletions.filter(h => h.completed).length} of ${habitsWithCompletions.length} anchors completed`}
                   >
                     <div
-                      className="h-full bg-gradient-to-r from-sage to-birch rounded-full transition-all duration-500"
+                      className="h-full bg-sage rounded-full transition-all duration-500"
                       style={{ width: `${habitsWithCompletions.length > 0 ? (habitsWithCompletions.filter(h => h.completed).length / habitsWithCompletions.length) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-sage" data-testid="text-habit-count" aria-hidden="true">
+                  <span className="text-[10px] font-semibold text-sage" data-testid="text-habit-count">
                     {habitsWithCompletions.filter(h => h.completed).length}/{habitsWithCompletions.length}
                   </span>
                 </div>
               </div>
-              
-              <div className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar pr-1 relative z-10" role="list" aria-label="Daily anchors">
+
+              <div className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar" role="list" aria-label="Daily anchors">
                 {habitsWithCompletions.map((habit) => (
                   <div
                     key={habit.id}
@@ -653,86 +617,65 @@ export default function Home() {
                     }}
                     role="listitem"
                     tabIndex={0}
-                    aria-label={`${habit.label}, ${habit.completed ? "completed" : "not completed"}. Press Enter to toggle.`}
-                    className={`flex items-center p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                    aria-label={`${habit.label}, ${habit.completed ? "completed" : "not completed"}`}
+                    className={`flex items-center p-2 rounded-lg transition-all cursor-pointer ${
                       habit.completed
-                        ? "bg-sage/10 border-sage/30 shadow-sm"
-                        : "bg-night-forest/50 border-forest-floor/50 hover:border-sage/40 hover:shadow-md"
+                        ? "bg-sage/10 border border-sage/20"
+                        : "bg-night-forest/50 border border-forest-floor/30 hover:border-sage/30"
                     }`}
                   >
-                    <div className={`mr-3 transition-all ${habit.completed ? "text-sage scale-110" : "text-forest-floor"}`}>
+                    <div className={`mr-2 ${habit.completed ? "text-sage" : "text-forest-floor"}`}>
                       {habit.completed ? (
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-sage to-forest-floor flex items-center justify-center shadow-sm">
-                          <CheckCircle2 className="w-4 h-4 text-night-forest" data-testid={`icon-habit-completed-${habit.id}`} />
-                        </div>
+                        <CheckCircle2 className="w-4 h-4" data-testid={`icon-habit-completed-${habit.id}`} />
                       ) : (
-                        <Circle className="w-6 h-6" data-testid={`icon-habit-incomplete-${habit.id}`} />
+                        <Circle className="w-4 h-4" data-testid={`icon-habit-incomplete-${habit.id}`} />
                       )}
                     </div>
-                    <span className={`flex-1 text-sm font-medium ${habit.completed ? "text-sage/80 line-through" : "text-birch"}`} data-testid={`text-habit-label-${habit.id}`}>
+                    <span className={`flex-1 text-xs font-medium ${habit.completed ? "text-sage/70 line-through" : "text-birch"}`} data-testid={`text-habit-label-${habit.id}`}>
                       {habit.label}
                     </span>
-                    {habit.completed && (
-                      <span className="text-[10px] font-bold text-birch">✓</span>
-                    )}
                   </div>
                 ))}
-                
+
                 {/* Add Anchor Button */}
                 <button
                   onClick={() => setShowAddHabit(true)}
-                  className="w-full py-3 text-xs font-medium text-sage/60 border-2 border-dashed border-sage/20 rounded-2xl hover:bg-sage/5 hover:border-sage/40 transition-all"
+                  className="w-full py-2 text-[10px] font-medium text-sage/50 border border-dashed border-sage/20 rounded-lg hover:bg-sage/5 transition-all"
                   data-testid="button-add-habit"
-                  aria-label="Add a new anchor to track"
                 >
-                  + Add New Anchor
+                  + Add Anchor
                 </button>
               </div>
             </CardContent>
           </Card>
           )}
 
-          {/* Goals Progress */}
+          {/* Goals Progress - Compact inline */}
           {userGoals.filter(g => g.isActive).length > 0 && (
-            <Card className="border-none shadow-lg bg-deep-pine/95 backdrop-blur-md overflow-hidden">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-sm text-sage flex items-center gap-2">
-                    <Target className="w-4 h-4" /> Your Goals
-                  </h2>
-                  <Link href="/profile">
-                    <Button variant="ghost" size="sm" className="text-sage/70 h-6 text-xs">
-                      Manage
-                    </Button>
-                  </Link>
-                </div>
-                <div className="space-y-2">
+            <Link href="/metrics" className="shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 bg-deep-pine/80 rounded-xl border border-forest-floor/30">
+                <Target className="w-3.5 h-3.5 text-sage shrink-0" />
+                <div className="flex-1 flex gap-3 overflow-x-auto no-scrollbar">
                   {userGoals.filter(g => g.isActive).slice(0, 3).map((goal) => {
                     const Icon = goalIcons[goal.goalType] || Target;
                     const progress = getGoalProgress(goal.goalType);
                     return (
-                      <div key={goal.id} className="flex items-center gap-3" data-testid={`goal-progress-${goal.id}`}>
-                        <div className="w-8 h-8 rounded-full bg-forest-floor/40 flex items-center justify-center shrink-0">
-                          <Icon className="w-4 h-4 text-sage" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-birch truncate">{goalLabels[goal.goalType] || goal.goalType}</span>
-                            <span className="text-xs text-sage/70">{progress}%</span>
-                          </div>
-                          <div className="h-1.5 bg-forest-floor/30 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-sage to-birch rounded-full transition-all duration-500" 
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
+                      <div key={goal.id} className="flex items-center gap-1.5 shrink-0" data-testid={`goal-progress-${goal.id}`}>
+                        <Icon className="w-3 h-3 text-sage/70" />
+                        <span className="text-[10px] font-medium text-birch">{goalLabels[goal.goalType]?.slice(0, 3) || goal.goalType.slice(0, 3)}</span>
+                        <div className="w-8 h-1 bg-forest-floor/30 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-sage rounded-full"
+                            style={{ width: `${progress}%` }}
+                          />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </CardContent>
-            </Card>
+                <ChevronRight className="w-4 h-4 text-sage/50 shrink-0" />
+              </div>
+            </Link>
           )}
         </div>
       </div>

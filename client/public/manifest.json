@@ -1,11 +1,11 @@
 {
-  "name": "MindfulCoach",
-  "short_name": "MindfulCoach",
-  "description": "Your Personal Growth Companion - Track moods, journal thoughts, and connect with your AI coach",
+  "name": "REWIRE with Brian Coones",
+  "short_name": "REWIRE",
+  "description": "Personal transformation coaching - Rewire your mindset, track ground checks, journal reflections, and connect with Coach Brian",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8f7ff",
-  "theme_color": "#7c3aed",
+  "background_color": "#1E1E2E",
+  "theme_color": "#1E1E2E",
   "orientation": "portrait",
   "icons": [
     {
