@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,16 +13,12 @@ import {
   Moon,
   Leaf,
   Brain,
-  Flame,
   Clock,
   Star,
   Filter,
   Sparkles,
   Activity,
   Play,
-  LayoutGrid,
-  List,
-  CheckCircle,
 } from "lucide-react";
 import {
   usePractices,
@@ -76,94 +71,60 @@ function formatDuration(seconds: number): string {
   return `${minutes} min`;
 }
 
-function PracticeCard({
+function CompactPracticeCard({
   practice,
   isFavorite,
   onToggleFavorite,
-  sessionCount,
   onStart,
 }: {
   practice: Practice;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-  sessionCount: number;
   onStart: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+    <Card 
+      className="overflow-hidden border-forest-floor bg-deep-pine hover:border-sage/50 transition-all cursor-pointer"
+      onClick={onStart}
     >
-      <Card className="overflow-hidden border-forest-floor bg-deep-pine hover:border-sage/50 transition-all">
-        <CardContent className="p-0">
-          <div className="flex items-stretch">
-            <div
-              className={`w-20 flex-shrink-0 bg-gradient-to-br ${practice.colorGradient || "from-forest-floor to-deep-pine"} flex flex-col items-center justify-center p-3 text-white`}
-            >
-              {typeIcons[practice.type] || <Wind className="w-6 h-6" />}
-              <span className="text-xs mt-1 opacity-80">
+      <CardContent className="p-0">
+        <div className="flex items-center gap-3 p-2.5">
+          <div
+            className={`w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-br ${practice.colorGradient || "from-forest-floor to-deep-pine"} flex items-center justify-center text-white`}
+          >
+            {typeIcons[practice.type] || <Wind className="w-5 h-5" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-birch text-sm leading-tight truncate">
+              {practice.name}
+            </h3>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] text-sage/70">
                 {formatDuration(practice.durationSeconds)}
               </span>
-            </div>
-            <div className="flex-1 p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-birch text-sm leading-tight">
-                    {practice.name}
-                  </h3>
-                  {practice.subtitle && (
-                    <p className="text-xs text-sage mt-0.5">{practice.subtitle}</p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`h-8 w-8 p-0 ${isFavorite ? "text-birch" : "text-sage/50 hover:text-birch"}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleFavorite();
-                  }}
-                >
-                  <Star className={`w-4 h-4 ${isFavorite ? "fill-birch" : ""}`} />
-                </Button>
-              </div>
-              <p className="text-xs text-sage/70 mt-1 line-clamp-2">
-                {practice.description}
-              </p>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-1.5">
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] h-5 px-1.5 border-sage/30 text-sage/80"
-                  >
-                    {categoryIcons[practice.category]}
-                    <span className="ml-1">{categoryLabels[practice.category]}</span>
-                  </Badge>
-                  {sessionCount > 0 && (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] h-5 px-1.5 border-sage/30 text-sage/80"
-                    >
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      {sessionCount}x
-                    </Badge>
-                  )}
-                </div>
-                <Button
-                  size="sm"
-                  className="h-7 px-3 text-xs bg-birch/20 hover:bg-birch/30 text-birch"
-                  onClick={onStart}
-                >
-                  <Play className="w-3 h-3 mr-1" />
-                  Start
-                </Button>
-              </div>
+              <Badge
+                variant="outline"
+                className="text-[9px] h-4 px-1 border-sage/30 text-sage/60"
+              >
+                {categoryLabels[practice.category]}
+              </Badge>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${isFavorite ? "text-birch" : "text-sage/40 hover:text-birch"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+          >
+            <Star className={`w-3.5 h-3.5 ${isFavorite ? "fill-birch" : ""}`} />
+          </Button>
+          <Play className="w-4 h-4 text-birch/70" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -213,230 +174,175 @@ export default function Library() {
 
   return (
     <MobileLayout>
-      <div className="flex flex-col h-full bg-night-forest">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-deep-pine via-forest-floor/80 to-night-forest px-6 pt-6 pb-4 rounded-b-2xl">
+      <div className="flex flex-col h-full bg-night-forest overflow-hidden">
+        {/* Compact Header */}
+        <div className="shrink-0 bg-gradient-to-br from-deep-pine via-forest-floor/80 to-night-forest px-4 pt-4 pb-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-display font-bold text-birch">
-                Practice Library
-              </h1>
-              <p className="text-sage/80 mt-1">
-                Breathing, meditation & body scans
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 w-8 p-0 ${showFilters ? "bg-birch/20 text-birch" : "text-sage"}`}
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-sage"
-                onClick={() => setViewMode(viewMode === "list" ? "grid" : "list")}
-              >
-                {viewMode === "list" ? (
-                  <LayoutGrid className="w-4 h-4" />
-                ) : (
-                  <List className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
+            <h1 className="text-xl font-display font-bold text-birch">
+              Practice Library
+            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 w-8 p-0 ${showFilters ? "bg-birch/20 text-birch" : "text-sage"}`}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="w-4 h-4" />
+            </Button>
           </div>
 
-          {/* Filters */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 space-y-3"
-            >
-              {/* Type Filter */}
-              <div>
-                <p className="text-xs text-sage/60 mb-2">Type</p>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(typeLabels).map(([key, label]) => (
-                    <Button
-                      key={key}
-                      variant="outline"
-                      size="sm"
-                      className={`h-7 text-xs ${activeType === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
-                      onClick={() =>
-                        setActiveType(activeType === key ? undefined : key)
-                      }
-                    >
-                      {typeIcons[key]}
-                      <span className="ml-1.5">{label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <p className="text-xs text-sage/60 mb-2">Goal</p>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(categoryLabels).map(([key, label]) => (
-                    <Button
-                      key={key}
-                      variant="outline"
-                      size="sm"
-                      className={`h-7 text-xs ${activeCategory === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
-                      onClick={() =>
-                        setActiveCategory(activeCategory === key ? undefined : key)
-                      }
-                    >
-                      {categoryIcons[key]}
-                      <span className="ml-1.5">{label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Duration Filter */}
-              <div>
-                <p className="text-xs text-sage/60 mb-2">Duration</p>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(durationLabels).map(([key, label]) => (
-                    <Button
-                      key={key}
-                      variant="outline"
-                      size="sm"
-                      className={`h-7 text-xs ${activeDuration === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
-                      onClick={() =>
-                        setActiveDuration(activeDuration === key ? undefined : key)
-                      }
-                    >
-                      <Clock className="w-3 h-3 mr-1" />
-                      {label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {hasFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-sage hover:text-birch"
-                  onClick={clearFilters}
-                >
-                  Clear all filters
-                </Button>
-              )}
-            </motion.div>
-          )}
-        </div>
-
-        {/* Content */}
-        <ScrollArea className="flex-1">
-          <Tabs defaultValue="all" className="px-4 pt-4">
-            <TabsList className="w-full bg-deep-pine/50 mb-4">
-              <TabsTrigger value="all" className="flex-1 text-xs">
+          {/* Compact Tabs */}
+          <Tabs defaultValue="all" className="mt-3">
+            <TabsList className="w-full bg-deep-pine/50 h-8">
+              <TabsTrigger value="all" className="flex-1 text-xs h-7">
                 All
               </TabsTrigger>
-              <TabsTrigger value="favorites" className="flex-1 text-xs">
+              <TabsTrigger value="favorites" className="flex-1 text-xs h-7">
                 <Star className="w-3 h-3 mr-1" />
                 Favorites
               </TabsTrigger>
-              <TabsTrigger value="recent" className="flex-1 text-xs">
+              <TabsTrigger value="recent" className="flex-1 text-xs h-7">
                 <Clock className="w-3 h-3 mr-1" />
                 Recent
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="space-y-3 pb-6">
-              {loadingPractices ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Card key={i} className="h-24 bg-deep-pine animate-pulse" />
+            {/* Inline Filters */}
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 space-y-2"
+              >
+                {/* Type Filter */}
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(typeLabels).map(([key, label]) => (
+                    <Button
+                      key={key}
+                      variant="outline"
+                      size="sm"
+                      className={`h-6 text-[10px] px-2 ${activeType === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
+                      onClick={() => setActiveType(activeType === key ? undefined : key)}
+                    >
+                      {typeIcons[key]}
+                      <span className="ml-1">{label}</span>
+                    </Button>
                   ))}
                 </div>
-              ) : practices?.length === 0 ? (
-                <div className="text-center py-12 text-sage/60">
-                  <Wind className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No practices found</p>
+                {/* Category Filter */}
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(categoryLabels).map(([key, label]) => (
+                    <Button
+                      key={key}
+                      variant="outline"
+                      size="sm"
+                      className={`h-6 text-[10px] px-2 ${activeCategory === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
+                      onClick={() => setActiveCategory(activeCategory === key ? undefined : key)}
+                    >
+                      {categoryIcons[key]}
+                      <span className="ml-1">{label}</span>
+                    </Button>
+                  ))}
+                </div>
+                {/* Duration Filter */}
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(durationLabels).map(([key, label]) => (
+                    <Button
+                      key={key}
+                      variant="outline"
+                      size="sm"
+                      className={`h-6 text-[10px] px-2 ${activeDuration === key ? "bg-birch/20 text-birch border-birch/50" : "text-sage border-sage/30"}`}
+                      onClick={() => setActiveDuration(activeDuration === key ? undefined : key)}
+                    >
+                      <Clock className="w-3 h-3 mr-1" />
+                      {label}
+                    </Button>
+                  ))}
                   {hasFilters && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="mt-2 text-birch"
+                      className="h-6 text-[10px] px-2 text-sage hover:text-birch"
                       onClick={clearFilters}
                     >
-                      Clear filters
+                      Clear
                     </Button>
                   )}
                 </div>
-              ) : (
-                practices?.map((practice) => (
-                  <PracticeCard
-                    key={practice.id}
-                    practice={practice}
-                    isFavorite={favoriteIds.has(practice.id)}
-                    onToggleFavorite={() => handleToggleFavorite(practice.id)}
-                    sessionCount={sessionCounts.get(practice.id) || 0}
-                    onStart={() => handleStartPractice(practice)}
-                  />
-                ))
-              )}
-            </TabsContent>
+              </motion.div>
+            )}
 
-            <TabsContent value="favorites" className="space-y-3 pb-6">
-              {filteredFavorites.length === 0 ? (
-                <div className="text-center py-12 text-sage/60">
-                  <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No favorites yet</p>
-                  <p className="text-xs mt-1">
-                    Tap the star on any practice to add it
-                  </p>
-                </div>
-              ) : (
-                filteredFavorites.map((practice) => (
-                  <PracticeCard
-                    key={practice.id}
-                    practice={practice}
-                    isFavorite={true}
-                    onToggleFavorite={() => handleToggleFavorite(practice.id)}
-                    sessionCount={sessionCounts.get(practice.id) || 0}
-                    onStart={() => handleStartPractice(practice)}
-                  />
-                ))
-              )}
-            </TabsContent>
+            {/* Content Area - Scrollable */}
+            <div className="flex-1 overflow-y-auto mt-3" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+              <TabsContent value="all" className="space-y-2 pb-2 m-0">
+                {loadingPractices ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i} className="h-16 bg-deep-pine animate-pulse" />
+                    ))}
+                  </div>
+                ) : practices?.length === 0 ? (
+                  <div className="text-center py-8 text-sage/60">
+                    <Wind className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No practices found</p>
+                  </div>
+                ) : (
+                  practices?.map((practice) => (
+                    <CompactPracticeCard
+                      key={practice.id}
+                      practice={practice}
+                      isFavorite={favoriteIds.has(practice.id)}
+                      onToggleFavorite={() => handleToggleFavorite(practice.id)}
+                      onStart={() => handleStartPractice(practice)}
+                    />
+                  ))
+                )}
+              </TabsContent>
 
-            <TabsContent value="recent" className="space-y-3 pb-6">
-              {recentlyUsed.length === 0 ? (
-                <div className="text-center py-12 text-sage/60">
-                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No recent practices</p>
-                  <p className="text-xs mt-1">
-                    Your practice history will appear here
-                  </p>
-                </div>
-              ) : (
-                recentlyUsed.map(
-                  (practice) =>
-                    practice && (
-                      <PracticeCard
-                        key={practice.id}
-                        practice={practice}
-                        isFavorite={favoriteIds.has(practice.id)}
-                        onToggleFavorite={() => handleToggleFavorite(practice.id)}
-                        sessionCount={sessionCounts.get(practice.id) || 0}
-                        onStart={() => handleStartPractice(practice)}
-                      />
-                    )
-                )
-              )}
-            </TabsContent>
+              <TabsContent value="favorites" className="space-y-2 pb-2 m-0">
+                {filteredFavorites.length === 0 ? (
+                  <div className="text-center py-8 text-sage/60">
+                    <Star className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No favorites yet</p>
+                  </div>
+                ) : (
+                  filteredFavorites.map((practice) => (
+                    <CompactPracticeCard
+                      key={practice.id}
+                      practice={practice}
+                      isFavorite={true}
+                      onToggleFavorite={() => handleToggleFavorite(practice.id)}
+                      onStart={() => handleStartPractice(practice)}
+                    />
+                  ))
+                )}
+              </TabsContent>
+
+              <TabsContent value="recent" className="space-y-2 pb-2 m-0">
+                {recentlyUsed.length === 0 ? (
+                  <div className="text-center py-8 text-sage/60">
+                    <Clock className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No recent practices</p>
+                  </div>
+                ) : (
+                  recentlyUsed.map(
+                    (practice) =>
+                      practice && (
+                        <CompactPracticeCard
+                          key={practice.id}
+                          practice={practice}
+                          isFavorite={favoriteIds.has(practice.id)}
+                          onToggleFavorite={() => handleToggleFavorite(practice.id)}
+                          onStart={() => handleStartPractice(practice)}
+                        />
+                      )
+                  )
+                )}
+              </TabsContent>
+            </div>
           </Tabs>
-        </ScrollArea>
+        </div>
       </div>
     </MobileLayout>
   );

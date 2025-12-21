@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookHeart, Mic, Wind, User, BarChart3, Eye, Users, Library, Activity } from "lucide-react";
+import { Home, BookHeart, Mic, Users, Library, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppProfile } from "@/hooks/useAppProfile";
@@ -24,21 +24,22 @@ export default function MobileLayout({ children, fullWidth = false }: MobileLayo
     featureFlag?: keyof FeatureFlags;
   }
 
+  // 5 nav items with Coach centered (Profile removed - accessible from home)
+  // Coaches: Ground, Reflect, [Coach], Brothers, Metrics
+  // Clients: Ground, Reflect, [Coach], Library, Metrics
   const allLeftNavItems: NavItem[] = [
     { icon: Home, label: "Ground", path: "/", featureFlag: "groundCheck" },
     { icon: BookHeart, label: "Reflect", path: "/journal", featureFlag: "reflections" },
-    { icon: Library, label: "Library", path: "/library", featureFlag: "groundingPractice" },
   ];
 
   const allRightNavItemsCoach: NavItem[] = [
     { icon: Users, label: "Brothers", path: "/clients", featureFlag: "brotherhood" },
     { icon: Activity, label: "Metrics", path: "/metrics" },
-    { icon: User, label: "Profile", path: "/profile" },
   ];
 
   const allRightNavItemsClient: NavItem[] = [
+    { icon: Library, label: "Library", path: "/library", featureFlag: "groundingPractice" },
     { icon: Activity, label: "Metrics", path: "/metrics" },
-    { icon: User, label: "Profile", path: "/profile" },
   ];
 
   // Filter nav items based on feature flags
