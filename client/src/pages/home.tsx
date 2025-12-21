@@ -218,11 +218,11 @@ export default function Home() {
 
   const getMoodDisplay = (mood: string) => {
     const moodMap: Record<string, { icon: typeof Frown; color: string; bg: string }> = {
-      "Rough": { icon: Frown, color: "text-rose-500", bg: "bg-rose-100" },
-      "Okay": { icon: Cloud, color: "text-slate-500", bg: "bg-slate-100" },
-      "Good": { icon: Meh, color: "text-sky-500", bg: "bg-sky-100" },
-      "Great": { icon: Smile, color: "text-emerald-500", bg: "bg-emerald-100" },
-      "Amazing": { icon: Sun, color: "text-amber-500", bg: "bg-amber-100" },
+      "Rough": { icon: Frown, color: "text-coral", bg: "bg-coral/20" },
+      "Okay": { icon: Cloud, color: "text-muted-foreground", bg: "bg-muted/30" },
+      "Good": { icon: Meh, color: "text-info", bg: "bg-info/20" },
+      "Great": { icon: Smile, color: "text-success", bg: "bg-success/20" },
+      "Amazing": { icon: Sun, color: "text-gold", bg: "bg-gold/20" },
     };
     return moodMap[mood] || moodMap["Okay"];
   };
@@ -254,15 +254,15 @@ export default function Home() {
             </div>
             <div className="flex gap-2 items-center">
               {gamification && (
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-birch/20 rounded-full border border-birch/30">
-                  <Award className="w-3 h-3 text-birch" />
-                  <span className="text-[10px] font-bold text-birch">Lv.{gamification.currentLevel}</span>
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-gold/20 rounded-full border border-gold/40 glow-gold">
+                  <Award className="w-3 h-3 text-gold" />
+                  <span className="text-[10px] font-bold text-gold">Lv.{gamification.currentLevel}</span>
                 </div>
               )}
               {habitStats && habitStats.currentStreak > 0 && (
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-ember/20 rounded-full border border-ember/30">
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-ember/20 rounded-full border border-ember/40 glow-ember">
                   <Flame className="w-3 h-3 text-ember" />
-                  <span className="text-[10px] font-bold text-ember">{habitStats.currentStreak}</span>
+                  <span className="text-[10px] font-bold streak-fire">{habitStats.currentStreak}</span>
                 </div>
               )}
             </div>
@@ -307,24 +307,24 @@ export default function Home() {
             <div className="shrink-0 grid grid-cols-3 gap-2">
               <button
                 onClick={() => handleQuickAction("regulate")}
-                className="flex flex-col items-center p-3 bg-gradient-to-br from-sage/20 to-deep-pine rounded-xl border border-sage/30 hover:border-sage/50 transition-all"
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-coral/15 to-deep-pine rounded-xl border border-coral/30 hover:border-coral/50 hover:glow-warning transition-all group"
               >
-                <Heart className="w-6 h-6 text-sage mb-1" />
-                <span className="text-[10px] font-semibold text-sage">Regulate</span>
+                <Heart className="w-6 h-6 text-coral mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold text-coral">Regulate</span>
               </button>
               <button
                 onClick={() => handleQuickAction("reframe")}
-                className="flex flex-col items-center p-3 bg-gradient-to-br from-birch/20 to-deep-pine rounded-xl border border-birch/30 hover:border-birch/50 transition-all"
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-teal/15 to-deep-pine rounded-xl border border-teal/30 hover:border-teal/50 hover:glow-info transition-all group"
               >
-                <RefreshCw className="w-6 h-6 text-birch mb-1" />
-                <span className="text-[10px] font-semibold text-birch">Reframe</span>
+                <RefreshCw className="w-6 h-6 text-teal mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold text-teal">Reframe</span>
               </button>
               <button
                 onClick={() => handleQuickAction("reset")}
-                className="flex flex-col items-center p-3 bg-gradient-to-br from-amber-500/20 to-deep-pine rounded-xl border border-amber-500/30 hover:border-amber-500/50 transition-all"
+                className="flex flex-col items-center p-3 bg-gradient-to-br from-gold/15 to-deep-pine rounded-xl border border-gold/30 hover:border-gold/50 hover:glow-gold transition-all group"
               >
-                <Zap className="w-6 h-6 text-amber-400 mb-1" />
-                <span className="text-[10px] font-semibold text-amber-400">Reset</span>
+                <Zap className="w-6 h-6 text-gold mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold text-gold">Reset</span>
               </button>
             </div>
           )}
@@ -516,11 +516,11 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between gap-1" role="group" aria-label="Select how grounded you feel">
                   {[
-                    { icon: Frown, label: "Rough", color: "text-rose-400", bg: "bg-rose-900/30", activeBg: "bg-rose-900/50", ring: "ring-rose-500" },
-                    { icon: Cloud, label: "Okay", color: "text-slate-400", bg: "bg-slate-800/30", activeBg: "bg-slate-800/50", ring: "ring-slate-500" },
-                    { icon: Meh, label: "Good", color: "text-sky-400", bg: "bg-sky-900/30", activeBg: "bg-sky-900/50", ring: "ring-sky-500" },
-                    { icon: Smile, label: "Great", color: "text-sage", bg: "bg-sage/20", activeBg: "bg-sage/30", ring: "ring-sage" },
-                    { icon: Sun, label: "Amazing", color: "text-birch", bg: "bg-birch/20", activeBg: "bg-birch/30", ring: "ring-birch" },
+                    { icon: Frown, label: "Rough", color: "text-coral", bg: "bg-coral/15", activeBg: "bg-coral/25", ring: "ring-coral" },
+                    { icon: Cloud, label: "Okay", color: "text-muted-foreground", bg: "bg-muted/20", activeBg: "bg-muted/35", ring: "ring-muted-foreground" },
+                    { icon: Meh, label: "Good", color: "text-info", bg: "bg-info/15", activeBg: "bg-info/25", ring: "ring-info" },
+                    { icon: Smile, label: "Great", color: "text-success", bg: "bg-success/15", activeBg: "bg-success/25", ring: "ring-success" },
+                    { icon: Sun, label: "Amazing", color: "text-gold", bg: "bg-gold/15", activeBg: "bg-gold/25", ring: "ring-gold" },
                   ].map((mood) => (
                     <button
                       key={mood.label}
@@ -586,18 +586,18 @@ export default function Home() {
                 <h3 className="font-semibold text-xs text-sage">Daily Anchors</h3>
                 <div className="flex items-center gap-2">
                   <div
-                    className="h-1.5 w-12 bg-forest-floor/30 rounded-full overflow-hidden"
+                    className="h-1.5 w-12 bg-forest-floor/30 rounded-full overflow-hidden progress-shimmer"
                     role="progressbar"
                     aria-valuenow={habitsWithCompletions.filter(h => h.completed).length}
                     aria-valuemin={0}
                     aria-valuemax={habitsWithCompletions.length}
                   >
                     <div
-                      className="h-full bg-sage rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-teal to-success rounded-full transition-all duration-500"
                       style={{ width: `${habitsWithCompletions.length > 0 ? (habitsWithCompletions.filter(h => h.completed).length / habitsWithCompletions.length) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-semibold text-sage" data-testid="text-habit-count">
+                  <span className="text-[10px] font-semibold text-success" data-testid="text-habit-count">
                     {habitsWithCompletions.filter(h => h.completed).length}/{habitsWithCompletions.length}
                   </span>
                 </div>
@@ -624,7 +624,7 @@ export default function Home() {
                         : "bg-night-forest/50 border border-forest-floor/30 hover:border-sage/30"
                     }`}
                   >
-                    <div className={`mr-2 ${habit.completed ? "text-sage" : "text-forest-floor"}`}>
+                    <div className={`mr-2 ${habit.completed ? "text-success check-glow" : "text-forest-floor"}`}>
                       {habit.completed ? (
                         <CheckCircle2 className="w-4 h-4" data-testid={`icon-habit-completed-${habit.id}`} />
                       ) : (

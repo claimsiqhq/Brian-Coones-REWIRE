@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Play, Pause, RotateCcw, ChevronLeft, Wind, Heart, Zap, Moon, Leaf, Brain, Flame, Volume2, VolumeX, Mic, Music, Loader2 } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronLeft, Wind, Heart, Zap, Moon, Leaf, Brain, Flame, Volume2, VolumeX, Mic, Music, Loader2, Scan, Timer } from "lucide-react";
 import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import { useAmbientSound, type Phase } from "@/hooks/useAmbientSound";
 import { usePractice } from "@/lib/api";
@@ -124,6 +124,34 @@ const techniques: BreathingTechnique[] = [
     cycles: 30,
     specialInstructions: "After 30 breaths, exhale and hold as long as comfortable",
   },
+  {
+    id: "bodyscan",
+    name: "Body Scan",
+    subtitle: "Progressive relaxation",
+    description: "Systematically scan your body from head to toe. Release tension and cultivate awareness.",
+    icon: <Scan className="w-5 h-5" />,
+    color: "from-teal to-sage/50",
+    phases: [
+      { phase: "inhale", duration: 4000, label: "Breathe In" },
+      { phase: "hold", duration: 2000, label: "Notice" },
+      { phase: "exhale", duration: 6000, label: "Release" },
+      { phase: "holdEmpty", duration: 2000, label: "Let Go" },
+    ],
+    specialInstructions: "Focus on each body part: head, neck, shoulders, arms, chest, belly, hips, legs, feet",
+  },
+  {
+    id: "timer",
+    name: "Silent Timer",
+    subtitle: "Focused stillness",
+    description: "A simple timer for your own meditation practice. Sit in stillness with gentle beginning and ending bells.",
+    icon: <Timer className="w-5 h-5" />,
+    color: "from-violet to-deep-pine",
+    phases: [
+      { phase: "inhale", duration: 5000, label: "Settle" },
+      { phase: "exhale", duration: 5000, label: "Stillness" },
+    ],
+    specialInstructions: "Simply be present. Follow your natural breath.",
+  },
 ];
 
 // Helper to convert database practice to BreathingTechnique format
@@ -138,6 +166,8 @@ function convertPracticeToTechnique(practice: any): BreathingTechnique | null {
     leaf: <Leaf className="w-5 h-5" />,
     wind: <Wind className="w-5 h-5" />,
     flame: <Flame className="w-5 h-5" />,
+    scan: <Scan className="w-5 h-5" />,
+    timer: <Timer className="w-5 h-5" />,
   };
 
   return {

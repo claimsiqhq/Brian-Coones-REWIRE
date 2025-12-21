@@ -34,10 +34,30 @@
   --color-sage: hsl(var(--sage));
   --color-birch: hsl(var(--birch));
   --color-ember: hsl(var(--ember));
-  
+
+  /* New Accent Colors for Visual Pop */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-glow: hsl(var(--glow));
+  --color-gold: hsl(var(--gold));
+  --color-teal: hsl(var(--teal));
+  --color-coral: hsl(var(--coral));
+  --color-violet: hsl(var(--violet));
+
+  /* Mood Colors */
+  --color-mood-amazing: hsl(var(--mood-amazing));
+  --color-mood-great: hsl(var(--mood-great));
+  --color-mood-good: hsl(var(--mood-good));
+  --color-mood-okay: hsl(var(--mood-okay));
+  --color-mood-rough: hsl(var(--mood-rough));
+
   --font-sans: 'Montserrat', sans-serif;
   --font-display: 'Poppins', sans-serif;
-  
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -45,107 +65,214 @@
 }
 
 :root {
-  /* REWIRE - Modern Black/White Palette */
-  /* Clean, minimal dark theme with neutral accents */
-  
+  /* REWIRE - Enhanced Dark Theme with Vibrant Accents */
+  /* Nature-inspired dark theme with colorful accent pops */
+
   /* Core Brand Colors - REWIRE defaults */
   --night-forest: 240 21% 15%;     /* #1E1E2E - Dark background */
   --deep-pine: 245 19% 19%;        /* #272738 - Cards */
   --forest-floor: 240 12% 26%;     /* #3A3A4A - Borders */
-  --sage: 180 2% 82%;              /* #D0D2D2 - Light gray accent */
-  --birch: 0 0% 98%;               /* #FBFBFB - Near white text */
-  --ember: 180 2% 82%;             /* #D0D2D2 - Neutral accent */
-  
+  --sage: 155 25% 75%;             /* #B0D4C1 - Soft green-gray accent (warmer) */
+  --birch: 45 30% 96%;             /* #FAF8F3 - Warm cream white (warmer) */
+  --ember: 25 95% 55%;             /* #F47D20 - Vibrant orange accent */
+
+  /* NEW: Vibrant Accent Colors */
+  --success: 152 69% 45%;          /* #22C55E - Fresh forest green */
+  --success-foreground: 0 0% 100%;
+  --warning: 38 95% 55%;           /* #F59E0B - Warm amber */
+  --warning-foreground: 0 0% 10%;
+  --info: 173 80% 40%;             /* #14B8A6 - Calming teal */
+  --info-foreground: 0 0% 100%;
+  --glow: 45 100% 70%;             /* #FFD666 - Warm golden glow */
+  --gold: 45 93% 58%;              /* #EAB308 - Achievement gold */
+  --teal: 173 80% 40%;             /* #14B8A6 - Focus teal */
+  --coral: 12 90% 62%;             /* #F87171 - Soft coral-red */
+  --violet: 258 90% 66%;           /* #8B5CF6 - Soft violet */
+
+  /* Semantic Mood Colors */
+  --mood-amazing: 45 100% 60%;     /* Radiant gold-yellow */
+  --mood-great: 152 69% 50%;       /* Fresh green */
+  --mood-good: 199 89% 48%;        /* Calm sky blue */
+  --mood-okay: 217 19% 55%;        /* Neutral slate */
+  --mood-rough: 0 72% 55%;         /* Soft coral-red */
+
   /* Dark theme */
   --background: 240 21% 15%;
-  --foreground: 0 0% 96%;
+  --foreground: 45 20% 95%;
 
-  /* Cards */
+  /* Cards - slightly warmer */
   --card: 245 19% 19%;
-  --card-foreground: 0 0% 96%;
+  --card-foreground: 45 20% 95%;
   --card-border: 240 12% 26%;
 
   /* Popovers */
   --popover: 245 19% 21%;
-  --popover-foreground: 0 0% 96%;
+  --popover-foreground: 45 20% 95%;
 
-  /* Primary: Birch (near white) */
-  --primary: 0 0% 98%;
+  /* Primary: Warm Birch (cream white) */
+  --primary: 45 30% 96%;
   --primary-foreground: 240 21% 15%;
 
-  /* Secondary: Sage (light gray) */
-  --secondary: 180 2% 82%;
+  /* Secondary: Warmer Sage */
+  --secondary: 155 25% 75%;
   --secondary-foreground: 240 21% 15%;
 
   /* Muted: neutral grays */
   --muted: 240 10% 24%;
-  --muted-foreground: 180 2% 70%;
+  --muted-foreground: 155 10% 65%;
 
-  /* Accent: Neutral */
-  --accent: 180 2% 82%;
-  --accent-foreground: 240 21% 15%;
+  /* Accent: Warm teal for interactive elements */
+  --accent: 173 80% 40%;
+  --accent-foreground: 0 0% 100%;
 
-  /* Destructive */
-  --destructive: 0 70% 50%;
+  /* Destructive - softer coral-red */
+  --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
 
   --border: 240 12% 28%;
   --input: 240 10% 22%;
-  --ring: 0 0% 98%;
-  
+  --ring: 173 80% 40%;
+
   --radius: 0.75rem;
-  
-  /* Chart Colors - Neutral Palette */
-  --chart-1: 0 0% 98%;   /* Birch */
-  --chart-2: 140 18% 60%;  /* Sage */
-  --chart-3: 25 50% 55%;   /* Ember */
-  --chart-4: 200 15% 50%;  /* Muted blue-gray */
-  --chart-5: 160 10% 45%;  /* Forest Floor lighter */
+
+  /* Chart Colors - Vibrant but harmonious */
+  --chart-1: 173 80% 40%;    /* Teal */
+  --chart-2: 152 69% 45%;    /* Green */
+  --chart-3: 25 95% 55%;     /* Ember orange */
+  --chart-4: 258 90% 66%;    /* Violet */
+  --chart-5: 45 93% 58%;     /* Gold */
+}
+
+/* Light Mode Theme */
+.light {
+  /* Light theme - Nature-inspired with warm accents */
+  --night-forest: 45 30% 98%;      /* Light cream background */
+  --deep-pine: 45 25% 95%;         /* Slightly warm cards */
+  --forest-floor: 155 15% 85%;     /* Soft sage borders */
+  --sage: 155 35% 40%;             /* Deeper sage for contrast */
+  --birch: 240 21% 18%;            /* Dark text */
+  --ember: 25 95% 50%;             /* Vibrant orange */
+
+  /* Accent colors stay vibrant */
+  --success: 152 69% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 95% 50%;
+  --warning-foreground: 0 0% 10%;
+  --info: 173 80% 35%;
+  --info-foreground: 0 0% 100%;
+  --glow: 45 100% 55%;
+  --gold: 45 93% 50%;
+  --teal: 173 80% 35%;
+  --coral: 12 85% 55%;
+  --violet: 258 85% 60%;
+
+  /* Mood colors - slightly muted for light mode */
+  --mood-amazing: 45 95% 50%;
+  --mood-great: 152 65% 40%;
+  --mood-good: 199 85% 45%;
+  --mood-okay: 217 15% 50%;
+  --mood-rough: 0 70% 50%;
+
+  --background: 45 30% 98%;
+  --foreground: 240 21% 18%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 21% 18%;
+  --card-border: 155 15% 88%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 21% 18%;
+
+  --primary: 173 80% 35%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 155 25% 92%;
+  --secondary-foreground: 240 21% 18%;
+
+  --muted: 155 15% 92%;
+  --muted-foreground: 240 10% 45%;
+
+  --accent: 173 80% 35%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 155 15% 88%;
+  --input: 155 15% 95%;
+  --ring: 173 80% 35%;
+
+  /* Chart Colors - Light mode variants */
+  --chart-1: 173 80% 35%;
+  --chart-2: 152 65% 40%;
+  --chart-3: 25 90% 50%;
+  --chart-4: 258 85% 60%;
+  --chart-5: 45 93% 50%;
 }
 
 .dark {
-  /* Dark mode - same as :root for REWIRE */
+  /* Dark mode - Enhanced with vibrant accents */
   --night-forest: 240 21% 15%;
   --deep-pine: 245 19% 19%;
   --forest-floor: 240 12% 26%;
-  --sage: 180 2% 82%;
-  --birch: 0 0% 98%;
-  --ember: 180 2% 82%;
-  
+  --sage: 155 25% 75%;
+  --birch: 45 30% 96%;
+  --ember: 25 95% 55%;
+
+  /* Vibrant accent colors */
+  --success: 152 69% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 95% 55%;
+  --warning-foreground: 0 0% 10%;
+  --info: 173 80% 40%;
+  --info-foreground: 0 0% 100%;
+  --glow: 45 100% 70%;
+  --gold: 45 93% 58%;
+  --teal: 173 80% 40%;
+  --coral: 12 90% 62%;
+  --violet: 258 90% 66%;
+
+  /* Semantic Mood Colors */
+  --mood-amazing: 45 100% 60%;
+  --mood-great: 152 69% 50%;
+  --mood-good: 199 89% 48%;
+  --mood-okay: 217 19% 55%;
+  --mood-rough: 0 72% 55%;
+
   --background: 240 21% 15%;
-  --foreground: 0 0% 96%;
+  --foreground: 45 20% 95%;
 
   --card: 245 19% 19%;
-  --card-foreground: 0 0% 96%;
+  --card-foreground: 45 20% 95%;
   --card-border: 240 12% 26%;
 
   --popover: 245 19% 21%;
-  --popover-foreground: 0 0% 96%;
+  --popover-foreground: 45 20% 95%;
 
-  --primary: 0 0% 98%;
+  --primary: 45 30% 96%;
   --primary-foreground: 240 21% 15%;
 
-  --secondary: 180 2% 82%;
+  --secondary: 155 25% 75%;
   --secondary-foreground: 240 21% 15%;
 
   --muted: 240 10% 24%;
-  --muted-foreground: 180 2% 70%;
+  --muted-foreground: 155 10% 65%;
 
-  --accent: 180 2% 82%;
-  --accent-foreground: 240 21% 15%;
+  --accent: 173 80% 40%;
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 70% 50%;
+  --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
 
   --border: 240 12% 28%;
   --input: 240 10% 22%;
-  --ring: 0 0% 98%;
-  
-  --chart-1: 0 0% 98%;
-  --chart-2: 140 18% 60%;
-  --chart-3: 25 50% 55%;
-  --chart-4: 200 15% 50%;
-  --chart-5: 160 10% 45%;
+  --ring: 173 80% 40%;
+
+  --chart-1: 173 80% 40%;
+  --chart-2: 152 69% 45%;
+  --chart-3: 25 95% 55%;
+  --chart-4: 258 90% 66%;
+  --chart-5: 45 93% 58%;
 }
 
 @layer base {
@@ -195,4 +322,166 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Glow Effects - Subtle but impactful */
+  .glow-success {
+    box-shadow: 0 0 20px -5px hsl(var(--success) / 0.4);
+  }
+  .glow-warning {
+    box-shadow: 0 0 20px -5px hsl(var(--warning) / 0.4);
+  }
+  .glow-info {
+    box-shadow: 0 0 20px -5px hsl(var(--info) / 0.4);
+  }
+  .glow-gold {
+    box-shadow: 0 0 20px -5px hsl(var(--gold) / 0.4);
+  }
+  .glow-ember {
+    box-shadow: 0 0 20px -5px hsl(var(--ember) / 0.5);
+  }
+  .glow-primary {
+    box-shadow: 0 0 25px -5px hsl(var(--primary) / 0.3);
+  }
+  .glow-accent {
+    box-shadow: 0 0 25px -5px hsl(var(--accent) / 0.4);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .glass-light {
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Gradient text utilities */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-warm {
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--ember)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-nature {
+    background: linear-gradient(135deg, hsl(var(--sage)) 0%, hsl(var(--teal)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animated gradient backgrounds */
+  .bg-gradient-animated {
+    background: linear-gradient(
+      -45deg,
+      hsl(var(--deep-pine)),
+      hsl(var(--night-forest)),
+      hsl(var(--forest-floor)),
+      hsl(var(--deep-pine))
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  /* Pulse glow animation for achievements/completions */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Streak fire effect */
+  .streak-fire {
+    background: linear-gradient(135deg, hsl(var(--ember)) 0%, hsl(var(--gold)) 50%, hsl(var(--coral)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 8px hsl(var(--ember) / 0.5));
+  }
+
+  /* Card hover lift effect */
+  .card-hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px hsl(var(--primary) / 0.15);
+  }
+
+  /* Completion checkmark glow */
+  .check-glow {
+    filter: drop-shadow(0 0 6px hsl(var(--success) / 0.6));
+  }
+
+  /* Progress bar shimmer */
+  .progress-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.3),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+/* Keyframe animations */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(var(--success) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.6), 0 0 30px hsl(var(--success) / 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Skeleton loading animation enhancement */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    background-color: hsl(var(--muted));
+  }
+  50% {
+    opacity: 0.7;
+    background-color: hsl(var(--muted-foreground) / 0.2);
+  }
+}
+
+.skeleton-enhanced {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted-foreground) / 0.15) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite, shimmer 2s linear infinite;
 }

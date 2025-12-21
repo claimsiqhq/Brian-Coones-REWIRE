@@ -128,14 +128,14 @@ export default function MobileLayout({ children, fullWidth = false }: MobileLayo
                   className={cn(
                     "w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300",
                     isCenterActive
-                      ? "bg-gradient-to-br from-primary to-secondary scale-105 shadow-primary/30"
-                      : "bg-gradient-to-br from-primary/90 to-secondary/90 group-hover:scale-105 group-hover:shadow-primary/20"
+                      ? "bg-gradient-to-br from-teal to-sage scale-105 glow-accent"
+                      : "bg-gradient-to-br from-teal/90 to-sage/90 group-hover:scale-105 group-hover:glow-accent"
                   )}
                 >
                   <Mic
                     size={26}
                     strokeWidth={2}
-                    className="text-white"
+                    className="text-night-forest"
                   />
                 </div>
                 <span

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Heart, Sparkles, Brain, Wind, CheckCircle2, XCircle, Users, User, Mail, UserPlus, TreeDeciduous } from "lucide-react";
+import { Heart, Sparkles, Brain, Wind, CheckCircle2, XCircle, Users, User, UserPlus, Flame, Target, BookHeart, Mic } from "lucide-react";
 import rewireLogo from "/brands/rewire-logo.jpeg";
 import { useLocation } from "wouter";
 
@@ -163,16 +163,16 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       data-testid="checkbox-remember-me"
                       checked={loginData.rememberMe}
                       onCheckedChange={(checked) => setLoginData({ ...loginData, rememberMe: checked === true })}
-                      className="border-forest-floor data-[state=checked]:bg-sage"
+                      className="border-forest-floor data-[state=checked]:bg-teal data-[state=checked]:border-teal"
                     />
                     <Label htmlFor="remember-me" className="text-sm font-normal cursor-pointer text-sage">
                       Remember me
                     </Label>
                   </div>
-                  {error && <p className="text-sm text-red-500" data-testid="error-message">{error}</p>}
+                  {error && <p className="text-sm text-coral" data-testid="error-message">{error}</p>}
                   <Button
                     type="submit"
-                    className="w-full bg-birch hover:bg-birch/80 text-night-forest"
+                    className="w-full bg-gradient-to-r from-teal to-sage hover:from-teal/90 hover:to-sage/90 text-night-forest font-semibold shadow-lg glow-accent"
                     disabled={loginMutation.isPending}
                     data-testid="button-login"
                   >
@@ -192,12 +192,12 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       placeholder="your@email.com"
                       value={registerData.email}
                       onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${emailError ? "border-red-500" : registerData.email && emailValid ? "border-sage" : ""}`}
+                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${emailError ? "border-coral" : registerData.email && emailValid ? "border-success" : ""}`}
                       aria-invalid={!!emailError}
                       required
                     />
                     {emailError && (
-                      <p className="text-xs text-red-500">{emailError}</p>
+                      <p className="text-xs text-coral">{emailError}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -221,11 +221,11 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       placeholder="Choose a username for login"
                       value={registerData.username}
                       onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${usernameError ? "border-red-500" : ""}`}
+                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${usernameError ? "border-coral" : ""}`}
                       aria-invalid={!!usernameError}
                     />
                     {usernameError && (
-                      <p className="text-xs text-red-500">{usernameError}</p>
+                      <p className="text-xs text-coral">{usernameError}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -238,7 +238,7 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       value={registerData.password}
                       onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                       onFocus={() => setShowPasswordHints(true)}
-                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${registerData.password && !passwordValidation.isValid ? "border-red-500" : registerData.password && passwordValidation.isValid ? "border-sage" : ""}`}
+                      className={`bg-night-forest border-forest-floor text-birch placeholder:text-sage/50 ${registerData.password && !passwordValidation.isValid ? "border-coral" : registerData.password && passwordValidation.isValid ? "border-success" : ""}`}
                       aria-invalid={registerData.password.length > 0 && !passwordValidation.isValid}
                       required
                     />
@@ -250,11 +250,11 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                           return (
                             <div key={req} className="flex items-center gap-1.5">
                               {isMet ? (
-                                <CheckCircle2 className="w-3 h-3 text-sage" />
+                                <CheckCircle2 className="w-3 h-3 text-success check-glow" />
                               ) : (
-                                <XCircle className="w-3 h-3 text-red-400" />
+                                <XCircle className="w-3 h-3 text-coral" />
                               )}
-                              <span className={`text-xs ${isMet ? "text-sage" : "text-sage/50"}`}>
+                              <span className={`text-xs ${isMet ? "text-success" : "text-sage/50"}`}>
                                 {req}
                               </span>
                             </div>
@@ -273,14 +273,14 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                     >
                       <Label
                         htmlFor="role-client"
-                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           registerData.role === "client"
-                            ? "border-sage bg-sage/10"
-                            : "border-forest-floor hover:border-sage/50"
+                            ? "border-teal bg-teal/10 glow-info"
+                            : "border-forest-floor hover:border-teal/50"
                         }`}
                       >
                         <RadioGroupItem value="client" id="role-client" className="sr-only" />
-                        <User className={`w-6 h-6 ${registerData.role === "client" ? "text-sage" : "text-forest-floor"}`} />
+                        <User className={`w-6 h-6 ${registerData.role === "client" ? "text-teal" : "text-forest-floor"}`} />
                         <span className={`font-medium ${registerData.role === "client" ? "text-birch" : "text-sage/70"}`}>
                           Warrior
                         </span>
@@ -290,14 +290,14 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       </Label>
                       <Label
                         htmlFor="role-coach"
-                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           registerData.role === "coach"
-                            ? "border-birch bg-birch/10"
-                            : "border-forest-floor hover:border-birch/50"
+                            ? "border-gold bg-gold/10 glow-gold"
+                            : "border-forest-floor hover:border-gold/50"
                         }`}
                       >
                         <RadioGroupItem value="coach" id="role-coach" className="sr-only" />
-                        <Users className={`w-6 h-6 ${registerData.role === "coach" ? "text-birch" : "text-forest-floor"}`} />
+                        <Users className={`w-6 h-6 ${registerData.role === "coach" ? "text-gold" : "text-forest-floor"}`} />
                         <span className={`font-medium ${registerData.role === "coach" ? "text-birch" : "text-sage/70"}`}>
                           Guide
                         </span>
@@ -307,10 +307,10 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
                       </Label>
                     </RadioGroup>
                   </div>
-                  {error && <p className="text-sm text-red-500" data-testid="error-message">{error}</p>}
+                  {error && <p className="text-sm text-coral" data-testid="error-message">{error}</p>}
                   <Button
                     type="submit"
-                    className="w-full bg-birch hover:bg-birch/80 text-night-forest"
+                    className="w-full bg-gradient-to-r from-teal to-sage hover:from-teal/90 hover:to-sage/90 text-night-forest font-semibold shadow-lg glow-accent"
                     disabled={registerMutation.isPending || !isRegisterValid}
                     data-testid="button-register"
                   >
@@ -323,28 +323,46 @@ export default function AuthPage({ pendingInvite }: AuthPageProps) {
         </Card>
       </div>
       
-      <div className="hidden lg:flex flex-1 items-center justify-center p-8 bg-gradient-to-br from-violet-500 to-coral-400">
-        <div className="max-w-md text-white text-center">
-          <h1 className="text-4xl font-bold mb-6">Your Personal Growth Companion</h1>
-          <p className="text-lg opacity-90 mb-8">
-            Track your mood, build habits, journal your thoughts, and connect with your inner peace.
+      <div className="hidden lg:flex flex-1 items-center justify-center p-8 bg-gradient-to-br from-deep-pine via-forest-floor/50 to-night-forest relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-sage/5 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-gold/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-md text-center">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal to-sage flex items-center justify-center mx-auto mb-6 shadow-xl glow-accent">
+            <Flame className="w-10 h-10 text-night-forest" />
+          </div>
+          <h1 className="text-4xl font-display font-bold text-birch mb-4">Ground Yourself</h1>
+          <p className="text-lg text-sage/80 mb-8 leading-relaxed">
+            Track your mood, build grounding habits, journal your reflections, and connect with your inner wisdom.
           </p>
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-4">
-              <Heart className="w-8 h-8" />
-              <span>Mood Tracking</span>
+            <div className="glass flex items-center gap-3 rounded-xl p-4 border border-forest-floor/30 card-hover-lift">
+              <div className="w-10 h-10 rounded-lg bg-coral/20 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-coral" />
+              </div>
+              <span className="text-birch font-medium">Ground Check</span>
             </div>
-            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-4">
-              <Sparkles className="w-8 h-8" />
-              <span>Daily Habits</span>
+            <div className="glass flex items-center gap-3 rounded-xl p-4 border border-forest-floor/30 card-hover-lift">
+              <div className="w-10 h-10 rounded-lg bg-teal/20 flex items-center justify-center">
+                <Target className="w-5 h-5 text-teal" />
+              </div>
+              <span className="text-birch font-medium">Daily Anchors</span>
             </div>
-            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-4">
-              <Brain className="w-8 h-8" />
-              <span>AI Coach</span>
+            <div className="glass flex items-center gap-3 rounded-xl p-4 border border-forest-floor/30 card-hover-lift">
+              <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
+                <Mic className="w-5 h-5 text-gold" />
+              </div>
+              <span className="text-birch font-medium">AI Coach</span>
             </div>
-            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-4">
-              <Wind className="w-8 h-8" />
-              <span>Breathing</span>
+            <div className="glass flex items-center gap-3 rounded-xl p-4 border border-forest-floor/30 card-hover-lift">
+              <div className="w-10 h-10 rounded-lg bg-violet/20 flex items-center justify-center">
+                <Wind className="w-5 h-5 text-violet" />
+              </div>
+              <span className="text-birch font-medium">Breathing</span>
             </div>
           </div>
         </div>
