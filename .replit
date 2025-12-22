@@ -45,4 +45,4 @@ integrations = ["javascript_openai_ai_integrations:1.0.0", "google-calendar:1.0.
 [userenv]
 
 [userenv.shared]
-SENDGRID_FROM_EMAIL = "bcoones@gmail.com"
+SENDGRID_FROM_EMAIL = "info@neurovista.ai"
